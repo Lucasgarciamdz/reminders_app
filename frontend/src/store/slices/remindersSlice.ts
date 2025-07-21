@@ -64,7 +64,7 @@ const initialState: RemindersState = {
 // Async thunks for API calls
 export const fetchReminders = createAsyncThunk(
   'reminders/fetchReminders',
-  async (params?: ReminderQueryParams, { rejectWithValue }) => {
+  async (params: ReminderQueryParams | undefined, { rejectWithValue }) => {
     try {
       const response = await apiService.getReminders(params);
       return response.data;

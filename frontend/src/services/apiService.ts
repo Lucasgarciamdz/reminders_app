@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosResponse, AxiosRequestConfig, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import {
   LoginCredentials,
   AuthResponse,
@@ -20,7 +20,7 @@ interface RetryConfig {
   retryCondition?: (error: AxiosError) => boolean;
 }
 
-interface RequestWithRetry extends AxiosRequestConfig {
+interface RequestWithRetry extends InternalAxiosRequestConfig {
   _retry?: boolean;
   _retryCount?: number;
   _retryConfig?: RetryConfig;

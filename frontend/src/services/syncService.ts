@@ -340,7 +340,11 @@ class SyncService {
   registerBackgroundSync(): void {
     if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
       navigator.serviceWorker.ready.then((registration) => {
-        return registration.sync.register('reminder-sync');
+        // Type assertion for background sync API
+        const syncManager = (registration as any).sync;
+        if (syncManager) {
+          return syncManager.register('reminder-sync');
+        }
       }).catch((error) => {
         console.error('Background sync registration failed:', error);
       });
@@ -404,7 +408,8 @@ class SyncService {
 
   // Get last sync time
   async getLastSyncTime(): Promise<number | null> {
-    return await offlineStorageService.getSetting<number>('lastSyncTime');
+    const result = await offlineStorageService.getSetting<number>('lastSyncTime');
+    return result ?? null;
   }
 
   // Get pending operations count

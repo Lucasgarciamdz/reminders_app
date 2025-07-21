@@ -45,7 +45,7 @@ const FeatureGate: React.FC<FeatureGateProps> = ({
     const disabledChildren = React.Children.map(children, (child) => {
       if (React.isValidElement(child)) {
         // Handle common interactive components
-        if (child.type === Button || (child.props && 'onClick' in child.props)) {
+        if (child.type === Button || (child.props && typeof child.props === 'object' && child.props !== null && 'onClick' in child.props)) {
           return React.cloneElement(child as React.ReactElement<any>, {
             disabled: true,
             onClick: undefined,
@@ -53,7 +53,7 @@ const FeatureGate: React.FC<FeatureGateProps> = ({
         }
         
         // Handle form inputs
-        if (child.props && ('value' in child.props || 'checked' in child.props)) {
+        if (child.props && typeof child.props === 'object' && child.props !== null && ('value' in child.props || 'checked' in child.props)) {
           return React.cloneElement(child as React.ReactElement<any>, {
             disabled: true,
             readOnly: true,

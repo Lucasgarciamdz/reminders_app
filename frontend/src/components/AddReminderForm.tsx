@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import DatePicker from 'react-datepicker';
 import {
   Dialog,
   DialogTitle,
@@ -20,7 +19,11 @@ import {
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { format } from 'date-fns';
-import 'react-datepicker/dist/react-datepicker.css';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
 
 import { CreateReminderRequest, Priority, AddReminderFormProps } from '../types';
 import { createReminder } from '../store/slices/remindersSlice';
@@ -29,8 +32,8 @@ import { AppDispatch } from '../store';
 
 interface FormData {
   text: string;
-  reminderDate: Date;
-  reminderTime: Date | null;
+  reminderDate: dayjs.Dayjs;
+  reminderTime: dayjs.Dayjs | null;
   isAllDay: boolean;
   priority: Priority;
 }
@@ -49,8 +52,8 @@ const AddReminderForm: React.FC = () => {
   } = useForm<FormData>({
     defaultValues: {
       text: '',
-      reminderDate: new Date(),
-      reminderTime: new Date(),
+      reminderDate: dayjs(),
+      reminderTime: dayjs(),
       isAllDay: false,
       priority: Priority.MEDIUM,
     },
@@ -64,11 +67,11 @@ const AddReminderForm: React.FC = () => {
     
     try {
       // Format the date and time for the API
-      const reminderDate = format(data.reminderDate, 'yyyy-MM-dd');
+      const reminderDate = data.reminderDate.format('YYYY-MM-DD');
       let reminderTime: string | undefined;
       
       if (!data.isAllDay && data.reminderTime) {
-        reminderTime = format(data.reminderTime, 'HH:mm:ss');
+        reminderTime = data.reminderTime.format('HH:mm:ss');
       }
 
       const reminderData: CreateReminderRequest = {
@@ -112,23 +115,24 @@ const AddReminderForm: React.FC = () => {
   };
 
   return (
-    <Dialog
-      open={showForm}
-      onClose={handleCancel}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: { borderRadius: 2 }
-      }}
-    >
-      <DialogTitle>
-        <Typography variant="h6" component="h2">
-          Add New Reminder
-        </Typography>
-      </DialogTitle>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <Dialog
+        open={showForm}
+        onClose={handleCancel}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 2 }
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h6" component="h2">
+            Add New Reminder
+          </Typography>
+        </DialogTitle>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <DialogContent dividers>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <DialogContent dividers>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Reminder Text */}
             <Controller
@@ -168,26 +172,20 @@ const AddReminderForm: React.FC = () => {
                 required: 'Date is required'
               }}
               render={({ field }) => (
-                <Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    Date *
-                  </Typography>
-                  <DatePicker
-                    selected={field.value}
-                    onChange={(date) => field.onChange(date)}
-                    dateFormat="MMMM d, yyyy"
-                    minDate={new Date()}
-                    placeholderText="Select date"
-                    customInput={
-                      <TextField
-                        fullWidth
-                        error={!!errors.reminderDate}
-                        helperText={errors.reminderDate?.message}
-                        variant="outlined"
-                      />
-                    }
-                  />
-                </Box>
+                <DatePicker
+                  label="Date *"
+                  value={field.value}
+                  onChange={(newValue) => field.onChange(newValue)}
+                  minDate={dayjs()}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      error: !!errors.reminderDate,
+                      helperText: errors.reminderDate?.message,
+                      variant: 'outlined',
+                    },
+                  }}
+                />
               )}
             />
 
@@ -218,29 +216,19 @@ const AddReminderForm: React.FC = () => {
                   required: !isAllDay ? 'Time is required when not all day' : false
                 }}
                 render={({ field }) => (
-                  <Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                      Time *
-                    </Typography>
-                    <DatePicker
-                      selected={field.value}
-                      onChange={(time) => field.onChange(time)}
-                      showTimeSelect
-                      showTimeSelectOnly
-                      timeIntervals={15}
-                      timeCaption="Time"
-                      dateFormat="h:mm aa"
-                      placeholderText="Select time"
-                      customInput={
-                        <TextField
-                          fullWidth
-                          error={!!errors.reminderTime}
-                          helperText={errors.reminderTime?.message}
-                          variant="outlined"
-                        />
-                      }
-                    />
-                  </Box>
+                  <TimePicker
+                    label="Time *"
+                    value={field.value}
+                    onChange={(newValue) => field.onChange(newValue)}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        error: !!errors.reminderTime,
+                        helperText: errors.reminderTime?.message,
+                        variant: 'outlined',
+                      },
+                    }}
+                  />
                 )}
               />
             )}
@@ -330,6 +318,7 @@ const AddReminderForm: React.FC = () => {
         </DialogActions>
       </form>
     </Dialog>
+    </LocalizationProvider>
   );
 };
 

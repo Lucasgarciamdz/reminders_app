@@ -28,7 +28,7 @@ import {
   ExpandLess as ExpandLessIcon,
   Search as SearchIcon,
   DateRange as DateRangeIcon,
-  Priority as PriorityIcon,
+  Flag as PriorityIcon,
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
