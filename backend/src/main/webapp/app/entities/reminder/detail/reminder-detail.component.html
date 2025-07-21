@@ -1,0 +1,66 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (reminder(); as reminderRef) {
+      <div>
+        <h2 data-cy="reminderDetailsHeading"><span>Reminder</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span>ID</span></dt>
+          <dd>
+            <span>{{ reminderRef.id }}</span>
+          </dd>
+          <dt><span>Text</span></dt>
+          <dd>
+            <span>{{ reminderRef.text }}</span>
+          </dd>
+          <dt><span>Completed</span></dt>
+          <dd>
+            <span>{{ reminderRef.completed }}</span>
+          </dd>
+          <dt><span>Reminder Date</span></dt>
+          <dd>
+            <span>{{ reminderRef.reminderDate | formatMediumDate }}</span>
+          </dd>
+          <dt><span>Reminder Time</span></dt>
+          <dd>
+            <span>{{ reminderRef.reminderTime }}</span>
+          </dd>
+          <dt><span>Created At</span></dt>
+          <dd>
+            <span>{{ reminderRef.createdAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span>Updated At</span></dt>
+          <dd>
+            <span>{{ reminderRef.updatedAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span>Priority</span></dt>
+          <dd>
+            <span>{{ { null: '', LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH' }[reminderRef.priority ?? 'null'] }}</span>
+          </dd>
+          <dt><span>Is All Day</span></dt>
+          <dd>
+            <span>{{ reminderRef.isAllDay }}</span>
+          </dd>
+          <dt><span>User</span></dt>
+          <dd>
+            <span>{{ reminderRef.user?.login }}</span>
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span>Back</span>
+        </button>
+
+        <button type="button" [routerLink]="['/reminder', reminderRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span>Edit</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

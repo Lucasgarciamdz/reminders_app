@@ -1,0 +1,22 @@
+entity Reminder {
+  text String required maxlength(500)
+  completed Boolean required
+  reminderDate LocalDate required
+  reminderTime LocalTime
+  createdAt Instant required
+  updatedAt Instant
+  priority Priority
+  isAllDay Boolean required
+}
+
+enum Priority {
+  LOW, MEDIUM, HIGH
+}
+
+relationship ManyToOne {
+  Reminder{user(login)} to User with builtInEntity
+}
+
+paginate Reminder with pagination
+service Reminder with serviceImpl
+dto Reminder with mapstruct
