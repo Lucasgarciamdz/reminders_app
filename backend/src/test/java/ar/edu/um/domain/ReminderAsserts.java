@@ -47,14 +47,10 @@ public class ReminderAsserts {
     public static void assertReminderUpdatableFieldsEquals(Reminder expected, Reminder actual) {
         assertThat(actual)
             .as("Verify Reminder relevant properties")
-            .satisfies(a -> assertThat(a.getText()).as("check text").isEqualTo(expected.getText()))
-            .satisfies(a -> assertThat(a.getCompleted()).as("check completed").isEqualTo(expected.getCompleted()))
-            .satisfies(a -> assertThat(a.getReminderDate()).as("check reminderDate").isEqualTo(expected.getReminderDate()))
-            .satisfies(a -> assertThat(a.getReminderTime()).as("check reminderTime").isEqualTo(expected.getReminderTime()))
-            .satisfies(a -> assertThat(a.getCreatedAt()).as("check createdAt").isEqualTo(expected.getCreatedAt()))
-            .satisfies(a -> assertThat(a.getUpdatedAt()).as("check updatedAt").isEqualTo(expected.getUpdatedAt()))
-            .satisfies(a -> assertThat(a.getPriority()).as("check priority").isEqualTo(expected.getPriority()))
-            .satisfies(a -> assertThat(a.getIsAllDay()).as("check isAllDay").isEqualTo(expected.getIsAllDay()));
+            .satisfies(a -> assertThat(a.getTitle()).as("check title").isEqualTo(expected.getTitle()))
+            .satisfies(a -> assertThat(a.getDescription()).as("check description").isEqualTo(expected.getDescription()))
+            .satisfies(a -> assertThat(a.getDueDate()).as("check dueDate").isEqualTo(expected.getDueDate()))
+            .satisfies(a -> assertThat(a.getCompleted()).as("check completed").isEqualTo(expected.getCompleted()));
     }
 
     /**
@@ -64,6 +60,8 @@ public class ReminderAsserts {
      * @param actual the actual entity
      */
     public static void assertReminderUpdatableRelationshipsEquals(Reminder expected, Reminder actual) {
-        // empty method
+        assertThat(actual)
+            .as("Verify Reminder relationships")
+            .satisfies(a -> assertThat(a.getCategory()).as("check category").isEqualTo(expected.getCategory()));
     }
 }

@@ -50,20 +50,6 @@ describe('User Service', () => {
       expect(expectedResult).toMatchObject([expected]);
     });
 
-    it('should handle exceptions for searching a User', () => {
-      const queryObject: any = {
-        page: 0,
-        size: 20,
-        query: '',
-        sort: [],
-      };
-      service.search(queryObject).subscribe(() => expectedResult);
-
-      const req = httpMock.expectOne({ method: 'GET' });
-      req.flush(null, { status: 500, statusText: 'Internal Server Error' });
-      expect(expectedResult).toBe(null);
-    });
-
     describe('addUserToCollectionIfMissing', () => {
       it('should add a User to an empty array', () => {
         const user: IUser = sampleWithRequiredData;

@@ -1,5 +1,6 @@
 package ar.edu.um.domain;
 
+import static ar.edu.um.domain.CategoryTestSamples.*;
 import static ar.edu.um.domain.ReminderTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,5 +21,17 @@ class ReminderTest {
 
         reminder2 = getReminderSample2();
         assertThat(reminder1).isNotEqualTo(reminder2);
+    }
+
+    @Test
+    void categoryTest() {
+        Reminder reminder = getReminderRandomSampleGenerator();
+        Category categoryBack = getCategoryRandomSampleGenerator();
+
+        reminder.setCategory(categoryBack);
+        assertThat(reminder.getCategory()).isEqualTo(categoryBack);
+
+        reminder.category(null);
+        assertThat(reminder.getCategory()).isNull();
     }
 }

@@ -30,14 +30,14 @@ public interface ReminderRepository extends JpaRepository<Reminder, Long> {
     }
 
     @Query(
-        value = "select reminder from Reminder reminder left join fetch reminder.user",
+        value = "select reminder from Reminder reminder left join fetch reminder.user left join fetch reminder.category",
         countQuery = "select count(reminder) from Reminder reminder"
     )
     Page<Reminder> findAllWithToOneRelationships(Pageable pageable);
 
-    @Query("select reminder from Reminder reminder left join fetch reminder.user")
+    @Query("select reminder from Reminder reminder left join fetch reminder.user left join fetch reminder.category")
     List<Reminder> findAllWithToOneRelationships();
 
-    @Query("select reminder from Reminder reminder left join fetch reminder.user where reminder.id =:id")
+    @Query("select reminder from Reminder reminder left join fetch reminder.user left join fetch reminder.category where reminder.id =:id")
     Optional<Reminder> findOneWithToOneRelationships(@Param("id") Long id);
 }

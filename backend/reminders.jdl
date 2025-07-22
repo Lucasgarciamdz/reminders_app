@@ -1,22 +1,41 @@
+/**
+ * The Reminder entity.
+ */
 entity Reminder {
-  text String required maxlength(500)
+  title String required minlength(3),
+  description String,
+  dueDate Instant,
   completed Boolean required
-  reminderDate LocalDate required
-  reminderTime LocalTime
-  createdAt Instant required
-  updatedAt Instant
-  priority Priority
-  isAllDay Boolean required
 }
 
-enum Priority {
-  LOW, MEDIUM, HIGH
+/**
+ * The Category entity for grouping reminders.
+ */
+entity Category {
+  name String required unique minlength(2)
 }
 
+/**
+ * A user can have many reminders.
+ * We use 'with builtInEntity' to link to the JHipster User entity.
+ */
 relationship ManyToOne {
   Reminder{user(login)} to User with builtInEntity
 }
 
+/**
+ * A reminder can belong to one category.
+ * A category can have many reminders.
+ */
+relationship ManyToOne {
+  Reminder{category(name)} to Category
+}
+
+// --- Options ---
+// Using the deprecated 'paginate' keyword because the v8.11.0 parser
+// does not seem to recognize the new 'pagination' keyword, despite the warning.
 paginate Reminder with pagination
-service Reminder with serviceImpl
-dto Reminder with mapstruct
+
+dto * with mapstruct
+
+service all with serviceClass

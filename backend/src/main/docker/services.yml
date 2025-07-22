@@ -5,7 +5,3 @@ services:
     extends:
       file: ./postgresql.yml
       service: postgresql
-  elasticsearch:
-    extends:
-      file: ./elasticsearch.yml
-      service: elasticsearch

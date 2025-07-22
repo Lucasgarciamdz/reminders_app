@@ -13,20 +13,47 @@
           </div>
         }
 
-        @let textRef = editForm.get('text')!;
+        @let titleRef = editForm.get('title')!;
         <div class="mb-3">
-          <label class="form-label" for="field_text">Text</label>
-          <input type="text" class="form-control" name="text" id="field_text" data-cy="text" formControlName="text" />
-          @if (textRef.invalid && (textRef.dirty || textRef.touched)) {
+          <label class="form-label" for="field_title">Title</label>
+          <input type="text" class="form-control" name="title" id="field_title" data-cy="title" formControlName="title" />
+          @if (titleRef.invalid && (titleRef.dirty || titleRef.touched)) {
             <div>
-              @if (editForm.get('text')?.errors?.required) {
+              @if (editForm.get('title')?.errors?.required) {
                 <small class="form-text text-danger">This field is required.</small>
               }
-              @if (editForm.get('text')?.errors?.maxlength) {
-                <small class="form-text text-danger">This field cannot be longer than 500 characters.</small>
+              @if (editForm.get('title')?.errors?.minlength) {
+                <small class="form-text text-danger">This field is required to be at least 3 characters.</small>
               }
             </div>
           }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_description">Description</label>
+          <input
+            type="text"
+            class="form-control"
+            name="description"
+            id="field_description"
+            data-cy="description"
+            formControlName="description"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_dueDate">Due Date</label>
+          <div class="d-flex">
+            <input
+              id="field_dueDate"
+              data-cy="dueDate"
+              type="datetime-local"
+              class="form-control"
+              name="dueDate"
+              formControlName="dueDate"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
         </div>
 
         @let completedRef = editForm.get('completed')!;
@@ -42,115 +69,29 @@
           }
         </div>
 
-        @let reminderDateRef = editForm.get('reminderDate')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_reminderDate">Reminder Date</label>
-          <div class="input-group">
-            <input
-              id="field_reminderDate"
-              data-cy="reminderDate"
-              type="text"
-              class="form-control"
-              name="reminderDate"
-              ngbDatepicker
-              #reminderDateDp="ngbDatepicker"
-              formControlName="reminderDate"
-            />
-            <button type="button" class="btn btn-secondary" (click)="reminderDateDp.toggle()">
-              <fa-icon icon="calendar-alt"></fa-icon>
-            </button>
-          </div>
-          @if (reminderDateRef.invalid && (reminderDateRef.dirty || reminderDateRef.touched)) {
-            <div>
-              @if (editForm.get('reminderDate')?.errors?.required) {
-                <small class="form-text text-danger">This field is required.</small>
-              }
-            </div>
-          }
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_reminderTime">Reminder Time</label>
-          <input
-            type="time"
-            class="form-control"
-            name="reminderTime"
-            id="field_reminderTime"
-            data-cy="reminderTime"
-            formControlName="reminderTime"
-          />
-        </div>
-
-        @let createdAtRef = editForm.get('createdAt')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_createdAt">Created At</label>
-          <div class="d-flex">
-            <input
-              id="field_createdAt"
-              data-cy="createdAt"
-              type="datetime-local"
-              class="form-control"
-              name="createdAt"
-              formControlName="createdAt"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-          @if (createdAtRef.invalid && (createdAtRef.dirty || createdAtRef.touched)) {
-            <div>
-              @if (editForm.get('createdAt')?.errors?.required) {
-                <small class="form-text text-danger">This field is required.</small>
-              }
-              <small class="form-text text-danger" [hidden]="!editForm.get('createdAt')?.errors?.datetimelocal"
-                >This field should be a date and time.</small
-              >
-            </div>
-          }
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_updatedAt">Updated At</label>
-          <div class="d-flex">
-            <input
-              id="field_updatedAt"
-              data-cy="updatedAt"
-              type="datetime-local"
-              class="form-control"
-              name="updatedAt"
-              formControlName="updatedAt"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_priority">Priority</label>
-          <select class="form-control" name="priority" formControlName="priority" id="field_priority" data-cy="priority">
-            <option [ngValue]="null"></option>
-            @for (priority of priorityValues; track $index) {
-              <option [value]="priority">{{ { null: '', LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH' }[priority] }}</option>
-            }
-          </select>
-        </div>
-
-        @let isAllDayRef = editForm.get('isAllDay')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_isAllDay">Is All Day</label>
-          <input type="checkbox" class="form-check" name="isAllDay" id="field_isAllDay" data-cy="isAllDay" formControlName="isAllDay" />
-          @if (isAllDayRef.invalid && (isAllDayRef.dirty || isAllDayRef.touched)) {
-            <div>
-              @if (editForm.get('isAllDay')?.errors?.required) {
-                <small class="form-text text-danger">This field is required.</small>
-              }
-            </div>
-          }
-        </div>
-
         <div class="mb-3">
           <label class="form-label" for="field_user">User</label>
           <select class="form-control" id="field_user" data-cy="user" name="user" formControlName="user" [compareWith]="compareUser">
             <option [ngValue]="null"></option>
             @for (userOption of usersSharedCollection; track $index) {
               <option [ngValue]="userOption">{{ userOption.login }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_category">Category</label>
+          <select
+            class="form-control"
+            id="field_category"
+            data-cy="category"
+            name="category"
+            formControlName="category"
+            [compareWith]="compareCategory"
+          >
+            <option [ngValue]="null"></option>
+            @for (categoryOption of categoriesSharedCollection; track $index) {
+              <option [ngValue]="categoryOption">{{ categoryOption.name }}</option>
             }
           </select>
         </div>

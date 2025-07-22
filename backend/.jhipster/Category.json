@@ -1,0 +1,20 @@
+{
+  "annotations": {
+    "changelogDate": "20250722004132"
+  },
+  "applications": "*",
+  "documentation": "The Category entity for grouping reminders.",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "unique", "minlength"],
+      "fieldValidateRulesMinlength": "2"
+    }
+  ],
+  "name": "Category",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

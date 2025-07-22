@@ -1,44 +1,34 @@
 package ar.edu.um.service.dto;
 
-import ar.edu.um.domain.enumeration.Priority;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Objects;
 
 /**
  * A DTO for the {@link ar.edu.um.domain.Reminder} entity.
  */
+@Schema(description = "The Reminder entity.")
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class ReminderDTO implements Serializable {
 
     private Long id;
 
     @NotNull
-    @Size(max = 500)
-    private String text;
+    @Size(min = 3)
+    private String title;
+
+    private String description;
+
+    private Instant dueDate;
 
     @NotNull
     private Boolean completed;
 
-    @NotNull
-    private LocalDate reminderDate;
-
-    private LocalTime reminderTime;
-
-    @NotNull
-    private Instant createdAt;
-
-    private Instant updatedAt;
-
-    private Priority priority;
-
-    @NotNull
-    private Boolean isAllDay;
-
     private UserDTO user;
+
+    private CategoryDTO category;
 
     public Long getId() {
         return id;
@@ -48,12 +38,28 @@ public class ReminderDTO implements Serializable {
         this.id = id;
     }
 
-    public String getText() {
-        return text;
+    public String getTitle() {
+        return title;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Instant getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(Instant dueDate) {
+        this.dueDate = dueDate;
     }
 
     public Boolean getCompleted() {
@@ -64,60 +70,20 @@ public class ReminderDTO implements Serializable {
         this.completed = completed;
     }
 
-    public LocalDate getReminderDate() {
-        return reminderDate;
-    }
-
-    public void setReminderDate(LocalDate reminderDate) {
-        this.reminderDate = reminderDate;
-    }
-
-    public LocalTime getReminderTime() {
-        return reminderTime;
-    }
-
-    public void setReminderTime(LocalTime reminderTime) {
-        this.reminderTime = reminderTime;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Priority getPriority() {
-        return priority;
-    }
-
-    public void setPriority(Priority priority) {
-        this.priority = priority;
-    }
-
-    public Boolean getIsAllDay() {
-        return isAllDay;
-    }
-
-    public void setIsAllDay(Boolean isAllDay) {
-        this.isAllDay = isAllDay;
-    }
-
     public UserDTO getUser() {
         return user;
     }
 
     public void setUser(UserDTO user) {
         this.user = user;
+    }
+
+    public CategoryDTO getCategory() {
+        return category;
+    }
+
+    public void setCategory(CategoryDTO category) {
+        this.category = category;
     }
 
     @Override
@@ -146,15 +112,12 @@ public class ReminderDTO implements Serializable {
     public String toString() {
         return "ReminderDTO{" +
             "id=" + getId() +
-            ", text='" + getText() + "'" +
+            ", title='" + getTitle() + "'" +
+            ", description='" + getDescription() + "'" +
+            ", dueDate='" + getDueDate() + "'" +
             ", completed='" + getCompleted() + "'" +
-            ", reminderDate='" + getReminderDate() + "'" +
-            ", reminderTime='" + getReminderTime() + "'" +
-            ", createdAt='" + getCreatedAt() + "'" +
-            ", updatedAt='" + getUpdatedAt() + "'" +
-            ", priority='" + getPriority() + "'" +
-            ", isAllDay='" + getIsAllDay() + "'" +
             ", user=" + getUser() +
+            ", category=" + getCategory() +
             "}";
     }
 }

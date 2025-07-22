@@ -6,8 +6,10 @@ import { Subject, from, of } from 'rxjs';
 
 import { IUser } from 'app/entities/user/user.model';
 import { UserService } from 'app/entities/user/service/user.service';
-import { ReminderService } from '../service/reminder.service';
+import { ICategory } from 'app/entities/category/category.model';
+import { CategoryService } from 'app/entities/category/service/category.service';
 import { IReminder } from '../reminder.model';
+import { ReminderService } from '../service/reminder.service';
 import { ReminderFormService } from './reminder-form.service';
 
 import { ReminderUpdateComponent } from './reminder-update.component';
@@ -19,6 +21,7 @@ describe('Reminder Management Update Component', () => {
   let reminderFormService: ReminderFormService;
   let reminderService: ReminderService;
   let userService: UserService;
+  let categoryService: CategoryService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -42,6 +45,7 @@ describe('Reminder Management Update Component', () => {
     reminderFormService = TestBed.inject(ReminderFormService);
     reminderService = TestBed.inject(ReminderService);
     userService = TestBed.inject(UserService);
+    categoryService = TestBed.inject(CategoryService);
 
     comp = fixture.componentInstance;
   });
@@ -69,15 +73,40 @@ describe('Reminder Management Update Component', () => {
       expect(comp.usersSharedCollection).toEqual(expectedCollection);
     });
 
+    it('should call Category query and add missing value', () => {
+      const reminder: IReminder = { id: 4478 };
+      const category: ICategory = { id: 6752 };
+      reminder.category = category;
+
+      const categoryCollection: ICategory[] = [{ id: 6752 }];
+      jest.spyOn(categoryService, 'query').mockReturnValue(of(new HttpResponse({ body: categoryCollection })));
+      const additionalCategories = [category];
+      const expectedCollection: ICategory[] = [...additionalCategories, ...categoryCollection];
+      jest.spyOn(categoryService, 'addCategoryToCollectionIfMissing').mockReturnValue(expectedCollection);
+
+      activatedRoute.data = of({ reminder });
+      comp.ngOnInit();
+
+      expect(categoryService.query).toHaveBeenCalled();
+      expect(categoryService.addCategoryToCollectionIfMissing).toHaveBeenCalledWith(
+        categoryCollection,
+        ...additionalCategories.map(expect.objectContaining),
+      );
+      expect(comp.categoriesSharedCollection).toEqual(expectedCollection);
+    });
+
     it('should update editForm', () => {
       const reminder: IReminder = { id: 4478 };
       const user: IUser = { id: 3944 };
       reminder.user = user;
+      const category: ICategory = { id: 6752 };
+      reminder.category = category;
 
       activatedRoute.data = of({ reminder });
       comp.ngOnInit();
 
       expect(comp.usersSharedCollection).toContainEqual(user);
+      expect(comp.categoriesSharedCollection).toContainEqual(category);
       expect(comp.reminder).toEqual(reminder);
     });
   });
@@ -158,6 +187,16 @@ describe('Reminder Management Update Component', () => {
         jest.spyOn(userService, 'compareUser');
         comp.compareUser(entity, entity2);
         expect(userService.compareUser).toHaveBeenCalledWith(entity, entity2);
+      });
+    });
+
+    describe('compareCategory', () => {
+      it('should forward to categoryService', () => {
+        const entity = { id: 6752 };
+        const entity2 = { id: 4374 };
+        jest.spyOn(categoryService, 'compareCategory');
+        comp.compareCategory(entity, entity2);
+        expect(categoryService.compareCategory).toHaveBeenCalledWith(entity, entity2);
       });
     });
   });

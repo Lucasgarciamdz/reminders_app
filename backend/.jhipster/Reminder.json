@@ -1,46 +1,27 @@
 {
   "annotations": {
-    "changelogDate": "20250721132838"
+    "changelogDate": "20250722004131"
   },
   "applications": "*",
+  "documentation": "The Reminder entity.",
   "dto": "mapstruct",
   "fields": [
     {
-      "fieldName": "text",
+      "fieldName": "title",
       "fieldType": "String",
-      "fieldValidateRules": ["required", "maxlength"],
-      "fieldValidateRulesMaxlength": "500"
+      "fieldValidateRules": ["required", "minlength"],
+      "fieldValidateRulesMinlength": "3"
     },
     {
-      "fieldName": "completed",
-      "fieldType": "Boolean",
-      "fieldValidateRules": ["required"]
+      "fieldName": "description",
+      "fieldType": "String"
     },
     {
-      "fieldName": "reminderDate",
-      "fieldType": "LocalDate",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "fieldName": "reminderTime",
-      "fieldType": "LocalTime"
-    },
-    {
-      "fieldName": "createdAt",
-      "fieldType": "Instant",
-      "fieldValidateRules": ["required"]
-    },
-    {
-      "fieldName": "updatedAt",
+      "fieldName": "dueDate",
       "fieldType": "Instant"
     },
     {
-      "fieldName": "priority",
-      "fieldType": "Priority",
-      "fieldValues": "LOW,MEDIUM,HIGH"
-    },
-    {
-      "fieldName": "isAllDay",
+      "fieldName": "completed",
       "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
     }
@@ -55,7 +36,15 @@
       "relationshipSide": "left",
       "relationshipType": "many-to-one",
       "relationshipWithBuiltInEntity": true
+    },
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "category",
+      "relationshipName": "category",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
     }
   ],
-  "service": "serviceImpl"
+  "searchEngine": "no",
+  "service": "serviceClass"
 }

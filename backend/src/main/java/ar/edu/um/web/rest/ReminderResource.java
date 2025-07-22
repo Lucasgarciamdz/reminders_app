@@ -4,7 +4,6 @@ import ar.edu.um.repository.ReminderRepository;
 import ar.edu.um.service.ReminderService;
 import ar.edu.um.service.dto.ReminderDTO;
 import ar.edu.um.web.rest.errors.BadRequestAlertException;
-import ar.edu.um.web.rest.errors.ElasticsearchExceptionMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -185,28 +184,5 @@ public class ReminderResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
-    }
-
-    /**
-     * {@code SEARCH  /reminders/_search?query=:query} : search for the reminder corresponding
-     * to the query.
-     *
-     * @param query the query of the reminder search.
-     * @param pageable the pagination information.
-     * @return the result of the search.
-     */
-    @GetMapping("/_search")
-    public ResponseEntity<List<ReminderDTO>> searchReminders(
-        @RequestParam("query") String query,
-        @org.springdoc.core.annotations.ParameterObject Pageable pageable
-    ) {
-        LOG.debug("REST request to search for a page of Reminders for query {}", query);
-        try {
-            Page<ReminderDTO> page = reminderService.search(query, pageable);
-            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-            return ResponseEntity.ok().headers(headers).body(page.getContent());
-        } catch (RuntimeException e) {
-            throw ElasticsearchExceptionMapper.mapException(e);
-        }
     }
 }

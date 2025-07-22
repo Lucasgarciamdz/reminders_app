@@ -15,41 +15,33 @@
           <dd>
             <span>{{ reminderRef.id }}</span>
           </dd>
-          <dt><span>Text</span></dt>
+          <dt><span>Title</span></dt>
           <dd>
-            <span>{{ reminderRef.text }}</span>
+            <span>{{ reminderRef.title }}</span>
+          </dd>
+          <dt><span>Description</span></dt>
+          <dd>
+            <span>{{ reminderRef.description }}</span>
+          </dd>
+          <dt><span>Due Date</span></dt>
+          <dd>
+            <span>{{ reminderRef.dueDate | formatMediumDatetime }}</span>
           </dd>
           <dt><span>Completed</span></dt>
           <dd>
             <span>{{ reminderRef.completed }}</span>
           </dd>
-          <dt><span>Reminder Date</span></dt>
-          <dd>
-            <span>{{ reminderRef.reminderDate | formatMediumDate }}</span>
-          </dd>
-          <dt><span>Reminder Time</span></dt>
-          <dd>
-            <span>{{ reminderRef.reminderTime }}</span>
-          </dd>
-          <dt><span>Created At</span></dt>
-          <dd>
-            <span>{{ reminderRef.createdAt | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span>Updated At</span></dt>
-          <dd>
-            <span>{{ reminderRef.updatedAt | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span>Priority</span></dt>
-          <dd>
-            <span>{{ { null: '', LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH' }[reminderRef.priority ?? 'null'] }}</span>
-          </dd>
-          <dt><span>Is All Day</span></dt>
-          <dd>
-            <span>{{ reminderRef.isAllDay }}</span>
-          </dd>
           <dt><span>User</span></dt>
           <dd>
             <span>{{ reminderRef.user?.login }}</span>
+          </dd>
+          <dt><span>Category</span></dt>
+          <dd>
+            @if (reminder()!.category) {
+              <div>
+                <a [routerLink]="['/category', reminder()!.category?.id, 'view']">{{ reminderRef.category?.name }}</a>
+              </div>
+            }
           </dd>
         </dl>
 

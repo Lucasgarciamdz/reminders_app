@@ -15,7 +15,7 @@
         [routerLink]="['/reminder/new']"
       >
         <fa-icon icon="plus"></fa-icon>
-        <span class="hidden-sm-down">Create a new Reminder</span>
+        <span>Create a new Reminder</span>
       </button>
     </div>
   </h2>
@@ -23,32 +23,6 @@
   <jhi-alert-error />
 
   <jhi-alert />
-
-  <form name="searchForm" class="row row-cols-sm-auto align-items-center">
-    <div class="col-sm-12">
-      <div class="input-group w-100 mt-3">
-        <label class="visually-hidden" for="currentSearch">Search for Reminder</label>
-        <input
-          type="text"
-          class="form-control"
-          [(ngModel)]="currentSearch"
-          id="currentSearch"
-          name="currentSearch"
-          placeholder="Search for Reminder"
-        />
-
-        <button class="btn btn-info" (click)="search(currentSearch)">
-          <fa-icon icon="search"></fa-icon>
-        </button>
-
-        @if (currentSearch) {
-          <button class="btn btn-danger" (click)="search('')">
-            <fa-icon icon="trash-alt"></fa-icon>
-          </button>
-        }
-      </div>
-    </div>
-  </form>
 
   @if (reminders().length === 0) {
     <div class="alert alert-warning" id="no-result">
@@ -66,12 +40,25 @@
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col" jhiSortBy="text">
+            <th scope="col" jhiSortBy="title">
               <div class="d-flex">
-                <span>Text</span>
-                @if (!currentSearch) {
-                  <fa-icon class="p-1" icon="sort"></fa-icon>
-                }
+                <span>Title</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="description">
+              <div class="d-flex">
+                <span>Description</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="dueDate">
+              <div class="d-flex">
+                <span>Due Date</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
             <th scope="col" jhiSortBy="completed">
@@ -81,53 +68,15 @@
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col" jhiSortBy="reminderDate">
-              <div class="d-flex">
-                <span>Reminder Date</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="reminderTime">
-              <div class="d-flex">
-                <span>Reminder Time</span>
-                @if (!currentSearch) {
-                  <fa-icon class="p-1" icon="sort"></fa-icon>
-                }
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="createdAt">
-              <div class="d-flex">
-                <span>Created At</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="updatedAt">
-              <div class="d-flex">
-                <span>Updated At</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="priority">
-              <div class="d-flex">
-                <span>Priority</span>
-                @if (!currentSearch) {
-                  <fa-icon class="p-1" icon="sort"></fa-icon>
-                }
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="isAllDay">
-              <div class="d-flex">
-                <span>Is All Day</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
-              </div>
-            </th>
             <th scope="col" jhiSortBy="user.login">
               <div class="d-flex">
                 <span>User</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="category.name">
+              <div class="d-flex">
+                <span>Category</span>
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
@@ -140,16 +89,19 @@
               <td>
                 <a [routerLink]="['/reminder', reminder.id, 'view']">{{ reminder.id }}</a>
               </td>
-              <td>{{ reminder.text }}</td>
+              <td>{{ reminder.title }}</td>
+              <td>{{ reminder.description }}</td>
+              <td>{{ reminder.dueDate | formatMediumDatetime }}</td>
               <td>{{ reminder.completed }}</td>
-              <td>{{ reminder.reminderDate | formatMediumDate }}</td>
-              <td>{{ reminder.reminderTime }}</td>
-              <td>{{ reminder.createdAt | formatMediumDatetime }}</td>
-              <td>{{ reminder.updatedAt | formatMediumDatetime }}</td>
-              <td>{{ { null: '', LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH' }[reminder.priority ?? 'null'] }}</td>
-              <td>{{ reminder.isAllDay }}</td>
               <td>
                 {{ reminder.user?.login }}
+              </td>
+              <td>
+                @if (reminder.category) {
+                  <div>
+                    <a [routerLink]="['/category', reminder.category.id, 'view']">{{ reminder.category.name }}</a>
+                  </div>
+                }
               </td>
               <td class="text-end">
                 <div class="btn-group">

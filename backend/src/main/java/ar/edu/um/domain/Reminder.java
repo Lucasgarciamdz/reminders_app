@@ -1,22 +1,18 @@
 package ar.edu.um.domain;
 
-import ar.edu.um.domain.enumeration.Priority;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
- * A Reminder.
+ * The Reminder entity.
  */
 @Entity
 @Table(name = "reminder")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@org.springframework.data.elasticsearch.annotations.Document(indexName = "reminder")
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Reminder implements Serializable {
 
@@ -29,46 +25,25 @@ public class Reminder implements Serializable {
     private Long id;
 
     @NotNull
-    @Size(max = 500)
-    @Column(name = "text", length = 500, nullable = false)
-    @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Text)
-    private String text;
+    @Size(min = 3)
+    @Column(name = "title", nullable = false)
+    private String title;
+
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "due_date")
+    private Instant dueDate;
 
     @NotNull
     @Column(name = "completed", nullable = false)
-    @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Boolean)
     private Boolean completed;
-
-    @NotNull
-    @Column(name = "reminder_date", nullable = false)
-    private LocalDate reminderDate;
-
-    @Column(name = "reminder_time")
-    @org.springframework.data.elasticsearch.annotations.Field(
-        type = org.springframework.data.elasticsearch.annotations.FieldType.Date,
-        format = org.springframework.data.elasticsearch.annotations.DateFormat.hour_minute_second_millis
-    )
-    private LocalTime reminderTime;
-
-    @NotNull
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at")
-    private Instant updatedAt;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "priority")
-    @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Keyword)
-    private Priority priority;
-
-    @NotNull
-    @Column(name = "is_all_day", nullable = false)
-    @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Boolean)
-    private Boolean isAllDay;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Category category;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -85,17 +60,43 @@ public class Reminder implements Serializable {
         this.id = id;
     }
 
-    public String getText() {
-        return this.text;
+    public String getTitle() {
+        return this.title;
     }
 
-    public Reminder text(String text) {
-        this.setText(text);
+    public Reminder title(String title) {
+        this.setTitle(title);
         return this;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public Reminder description(String description) {
+        this.setDescription(description);
+        return this;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Instant getDueDate() {
+        return this.dueDate;
+    }
+
+    public Reminder dueDate(Instant dueDate) {
+        this.setDueDate(dueDate);
+        return this;
+    }
+
+    public void setDueDate(Instant dueDate) {
+        this.dueDate = dueDate;
     }
 
     public Boolean getCompleted() {
@@ -111,84 +112,6 @@ public class Reminder implements Serializable {
         this.completed = completed;
     }
 
-    public LocalDate getReminderDate() {
-        return this.reminderDate;
-    }
-
-    public Reminder reminderDate(LocalDate reminderDate) {
-        this.setReminderDate(reminderDate);
-        return this;
-    }
-
-    public void setReminderDate(LocalDate reminderDate) {
-        this.reminderDate = reminderDate;
-    }
-
-    public LocalTime getReminderTime() {
-        return this.reminderTime;
-    }
-
-    public Reminder reminderTime(LocalTime reminderTime) {
-        this.setReminderTime(reminderTime);
-        return this;
-    }
-
-    public void setReminderTime(LocalTime reminderTime) {
-        this.reminderTime = reminderTime;
-    }
-
-    public Instant getCreatedAt() {
-        return this.createdAt;
-    }
-
-    public Reminder createdAt(Instant createdAt) {
-        this.setCreatedAt(createdAt);
-        return this;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return this.updatedAt;
-    }
-
-    public Reminder updatedAt(Instant updatedAt) {
-        this.setUpdatedAt(updatedAt);
-        return this;
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Priority getPriority() {
-        return this.priority;
-    }
-
-    public Reminder priority(Priority priority) {
-        this.setPriority(priority);
-        return this;
-    }
-
-    public void setPriority(Priority priority) {
-        this.priority = priority;
-    }
-
-    public Boolean getIsAllDay() {
-        return this.isAllDay;
-    }
-
-    public Reminder isAllDay(Boolean isAllDay) {
-        this.setIsAllDay(isAllDay);
-        return this;
-    }
-
-    public void setIsAllDay(Boolean isAllDay) {
-        this.isAllDay = isAllDay;
-    }
-
     public User getUser() {
         return this.user;
     }
@@ -199,6 +122,19 @@ public class Reminder implements Serializable {
 
     public Reminder user(User user) {
         this.setUser(user);
+        return this;
+    }
+
+    public Category getCategory() {
+        return this.category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public Reminder category(Category category) {
+        this.setCategory(category);
         return this;
     }
 
@@ -226,14 +162,10 @@ public class Reminder implements Serializable {
     public String toString() {
         return "Reminder{" +
             "id=" + getId() +
-            ", text='" + getText() + "'" +
+            ", title='" + getTitle() + "'" +
+            ", description='" + getDescription() + "'" +
+            ", dueDate='" + getDueDate() + "'" +
             ", completed='" + getCompleted() + "'" +
-            ", reminderDate='" + getReminderDate() + "'" +
-            ", reminderTime='" + getReminderTime() + "'" +
-            ", createdAt='" + getCreatedAt() + "'" +
-            ", updatedAt='" + getUpdatedAt() + "'" +
-            ", priority='" + getPriority() + "'" +
-            ", isAllDay='" + getIsAllDay() + "'" +
             "}";
     }
 }

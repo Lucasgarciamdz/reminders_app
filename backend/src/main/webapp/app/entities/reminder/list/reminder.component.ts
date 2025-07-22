@@ -6,7 +6,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import SharedModule from 'app/shared/shared.module';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
-import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
+import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { ItemCountComponent } from 'app/shared/pagination';
 import { FormsModule } from '@angular/forms';
 
@@ -19,26 +19,14 @@ import { ReminderDeleteDialogComponent } from '../delete/reminder-delete-dialog.
 @Component({
   selector: 'jhi-reminder',
   templateUrl: './reminder.component.html',
-  imports: [
-    RouterModule,
-    FormsModule,
-    SharedModule,
-    SortDirective,
-    SortByDirective,
-    FormatMediumDatetimePipe,
-    FormatMediumDatePipe,
-    ItemCountComponent,
-  ],
+  imports: [RouterModule, FormsModule, SharedModule, SortDirective, SortByDirective, FormatMediumDatetimePipe, ItemCountComponent],
 })
 export class ReminderComponent implements OnInit {
-  private static readonly NOT_SORTABLE_FIELDS_AFTER_SEARCH = ['text', 'reminderTime', 'priority'];
-
   subscription: Subscription | null = null;
   reminders = signal<IReminder[]>([]);
   isLoading = false;
 
   sortState = sortStateSignal({});
-  currentSearch = '';
 
   itemsPerPage = ITEMS_PER_PAGE;
   totalItems = 0;
@@ -62,21 +50,6 @@ export class ReminderComponent implements OnInit {
       .subscribe();
   }
 
-  search(query: string): void {
-    this.page = 1;
-    this.currentSearch = query;
-    const { predicate } = this.sortState();
-    if (query && predicate && ReminderComponent.NOT_SORTABLE_FIELDS_AFTER_SEARCH.includes(predicate)) {
-      this.navigateToWithComponentValues(this.getDefaultSortState());
-      return;
-    }
-    this.navigateToWithComponentValues(this.sortState());
-  }
-
-  getDefaultSortState(): SortState {
-    return this.sortService.parseSortParam(this.activatedRoute.snapshot.data[DEFAULT_SORT_DATA]);
-  }
-
   delete(reminder: IReminder): void {
     const modalRef = this.modalService.open(ReminderDeleteDialogComponent, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.reminder = reminder;
@@ -98,24 +71,17 @@ export class ReminderComponent implements OnInit {
   }
 
   navigateToWithComponentValues(event: SortState): void {
-    this.handleNavigation(this.page, event, this.currentSearch);
+    this.handleNavigation(this.page, event);
   }
 
   navigateToPage(page: number): void {
-    this.handleNavigation(page, this.sortState(), this.currentSearch);
+    this.handleNavigation(page, this.sortState());
   }
 
   protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
     const page = params.get(PAGE_HEADER);
     this.page = +(page ?? 1);
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
-    if (params.has('search') && params.get('search') !== '') {
-      this.currentSearch = params.get('search') as string;
-      const { predicate } = this.sortState();
-      if (predicate && ReminderComponent.NOT_SORTABLE_FIELDS_AFTER_SEARCH.includes(predicate)) {
-        this.sortState.set({});
-      }
-    }
   }
 
   protected onResponseSuccess(response: EntityArrayResponseType): void {
@@ -133,7 +99,7 @@ export class ReminderComponent implements OnInit {
   }
 
   protected queryBackend(): Observable<EntityArrayResponseType> {
-    const { page, currentSearch } = this;
+    const { page } = this;
 
     this.isLoading = true;
     const pageToLoad: number = page;
@@ -141,18 +107,13 @@ export class ReminderComponent implements OnInit {
       page: pageToLoad - 1,
       size: this.itemsPerPage,
       eagerload: true,
-      query: currentSearch,
       sort: this.sortService.buildSortParam(this.sortState()),
     };
-    if (this.currentSearch && this.currentSearch !== '') {
-      return this.reminderService.search(queryObject).pipe(tap(() => (this.isLoading = false)));
-    }
     return this.reminderService.query(queryObject).pipe(tap(() => (this.isLoading = false)));
   }
 
-  protected handleNavigation(page: number, sortState: SortState, currentSearch?: string): void {
+  protected handleNavigation(page: number, sortState: SortState): void {
     const queryParamsObj = {
-      search: currentSearch,
       page,
       size: this.itemsPerPage,
       sort: this.sortService.buildSortParam(sortState),

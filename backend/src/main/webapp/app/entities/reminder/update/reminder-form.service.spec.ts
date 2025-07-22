@@ -20,15 +20,12 @@ describe('Reminder Form Service', () => {
         expect(formGroup.controls).toEqual(
           expect.objectContaining({
             id: expect.any(Object),
-            text: expect.any(Object),
+            title: expect.any(Object),
+            description: expect.any(Object),
+            dueDate: expect.any(Object),
             completed: expect.any(Object),
-            reminderDate: expect.any(Object),
-            reminderTime: expect.any(Object),
-            createdAt: expect.any(Object),
-            updatedAt: expect.any(Object),
-            priority: expect.any(Object),
-            isAllDay: expect.any(Object),
             user: expect.any(Object),
+            category: expect.any(Object),
           }),
         );
       });
@@ -39,15 +36,12 @@ describe('Reminder Form Service', () => {
         expect(formGroup.controls).toEqual(
           expect.objectContaining({
             id: expect.any(Object),
-            text: expect.any(Object),
+            title: expect.any(Object),
+            description: expect.any(Object),
+            dueDate: expect.any(Object),
             completed: expect.any(Object),
-            reminderDate: expect.any(Object),
-            reminderTime: expect.any(Object),
-            createdAt: expect.any(Object),
-            updatedAt: expect.any(Object),
-            priority: expect.any(Object),
-            isAllDay: expect.any(Object),
             user: expect.any(Object),
+            category: expect.any(Object),
           }),
         );
       });

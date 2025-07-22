@@ -2,7 +2,6 @@ import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideHttpClient } from '@angular/common/http';
 
-import { DATE_FORMAT } from 'app/config/input.constants';
 import { IReminder } from '../reminder.model';
 import { sampleWithFullData, sampleWithNewData, sampleWithPartialData, sampleWithRequiredData } from '../reminder.test-samples';
 
@@ -10,9 +9,7 @@ import { ReminderService, RestReminder } from './reminder.service';
 
 const requireRestSample: RestReminder = {
   ...sampleWithRequiredData,
-  reminderDate: sampleWithRequiredData.reminderDate?.format(DATE_FORMAT),
-  createdAt: sampleWithRequiredData.createdAt?.toJSON(),
-  updatedAt: sampleWithRequiredData.updatedAt?.toJSON(),
+  dueDate: sampleWithRequiredData.dueDate?.toJSON(),
 };
 
 describe('Reminder Service', () => {
@@ -98,20 +95,6 @@ describe('Reminder Service', () => {
       const req = httpMock.expectOne({ method: 'DELETE' });
       req.flush({ status: 200 });
       expect(expectedResult).toBe(expected);
-    });
-
-    it('should handle exceptions for searching a Reminder', () => {
-      const queryObject: any = {
-        page: 0,
-        size: 20,
-        query: '',
-        sort: [],
-      };
-      service.search(queryObject).subscribe(() => expectedResult);
-
-      const req = httpMock.expectOne({ method: 'GET' });
-      req.flush(null, { status: 500, statusText: 'Internal Server Error' });
-      expect(expectedResult).toBe(null);
     });
 
     describe('addReminderToCollectionIfMissing', () => {

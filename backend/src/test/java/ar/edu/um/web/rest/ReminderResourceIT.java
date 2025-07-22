@@ -3,7 +3,6 @@ package ar.edu.um.web.rest;
 import static ar.edu.um.domain.ReminderAsserts.*;
 import static ar.edu.um.web.rest.TestUtil.createUpdateProxyForBean;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -11,26 +10,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import ar.edu.um.IntegrationTest;
 import ar.edu.um.domain.Reminder;
-import ar.edu.um.domain.enumeration.Priority;
 import ar.edu.um.repository.ReminderRepository;
 import ar.edu.um.repository.UserRepository;
-import ar.edu.um.repository.search.ReminderSearchRepository;
 import ar.edu.um.service.ReminderService;
 import ar.edu.um.service.dto.ReminderDTO;
 import ar.edu.um.service.mapper.ReminderMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import org.assertj.core.util.IterableUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.util.Streamable;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -56,33 +46,20 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockUser
 class ReminderResourceIT {
 
-    private static final String DEFAULT_TEXT = "AAAAAAAAAA";
-    private static final String UPDATED_TEXT = "BBBBBBBBBB";
+    private static final String DEFAULT_TITLE = "AAAAAAAAAA";
+    private static final String UPDATED_TITLE = "BBBBBBBBBB";
+
+    private static final String DEFAULT_DESCRIPTION = "AAAAAAAAAA";
+    private static final String UPDATED_DESCRIPTION = "BBBBBBBBBB";
+
+    private static final Instant DEFAULT_DUE_DATE = Instant.ofEpochMilli(0L);
+    private static final Instant UPDATED_DUE_DATE = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
     private static final Boolean DEFAULT_COMPLETED = false;
     private static final Boolean UPDATED_COMPLETED = true;
 
-    private static final LocalDate DEFAULT_REMINDER_DATE = LocalDate.ofEpochDay(0L);
-    private static final LocalDate UPDATED_REMINDER_DATE = LocalDate.now(ZoneId.systemDefault());
-
-    private static final LocalTime DEFAULT_REMINDER_TIME = LocalTime.NOON;
-    private static final LocalTime UPDATED_REMINDER_TIME = LocalTime.MAX.withNano(0);
-
-    private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
-    private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
-
-    private static final Instant DEFAULT_UPDATED_AT = Instant.ofEpochMilli(0L);
-    private static final Instant UPDATED_UPDATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);
-
-    private static final Priority DEFAULT_PRIORITY = Priority.LOW;
-    private static final Priority UPDATED_PRIORITY = Priority.MEDIUM;
-
-    private static final Boolean DEFAULT_IS_ALL_DAY = false;
-    private static final Boolean UPDATED_IS_ALL_DAY = true;
-
     private static final String ENTITY_API_URL = "/api/reminders";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
-    private static final String ENTITY_SEARCH_API_URL = "/api/reminders/_search";
 
     private static Random random = new Random();
     private static AtomicLong longCount = new AtomicLong(random.nextInt() + (2 * Integer.MAX_VALUE));
@@ -106,9 +83,6 @@ class ReminderResourceIT {
     private ReminderService reminderServiceMock;
 
     @Autowired
-    private ReminderSearchRepository reminderSearchRepository;
-
-    @Autowired
     private EntityManager em;
 
     @Autowired
@@ -125,15 +99,7 @@ class ReminderResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Reminder createEntity() {
-        return new Reminder()
-            .text(DEFAULT_TEXT)
-            .completed(DEFAULT_COMPLETED)
-            .reminderDate(DEFAULT_REMINDER_DATE)
-            .reminderTime(DEFAULT_REMINDER_TIME)
-            .createdAt(DEFAULT_CREATED_AT)
-            .updatedAt(DEFAULT_UPDATED_AT)
-            .priority(DEFAULT_PRIORITY)
-            .isAllDay(DEFAULT_IS_ALL_DAY);
+        return new Reminder().title(DEFAULT_TITLE).description(DEFAULT_DESCRIPTION).dueDate(DEFAULT_DUE_DATE).completed(DEFAULT_COMPLETED);
     }
 
     /**
@@ -143,15 +109,7 @@ class ReminderResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static Reminder createUpdatedEntity() {
-        return new Reminder()
-            .text(UPDATED_TEXT)
-            .completed(UPDATED_COMPLETED)
-            .reminderDate(UPDATED_REMINDER_DATE)
-            .reminderTime(UPDATED_REMINDER_TIME)
-            .createdAt(UPDATED_CREATED_AT)
-            .updatedAt(UPDATED_UPDATED_AT)
-            .priority(UPDATED_PRIORITY)
-            .isAllDay(UPDATED_IS_ALL_DAY);
+        return new Reminder().title(UPDATED_TITLE).description(UPDATED_DESCRIPTION).dueDate(UPDATED_DUE_DATE).completed(UPDATED_COMPLETED);
     }
 
     @BeforeEach
@@ -163,7 +121,6 @@ class ReminderResourceIT {
     void cleanup() {
         if (insertedReminder != null) {
             reminderRepository.delete(insertedReminder);
-            reminderSearchRepository.delete(insertedReminder);
             insertedReminder = null;
         }
     }
@@ -172,7 +129,6 @@ class ReminderResourceIT {
     @Transactional
     void createReminder() throws Exception {
         long databaseSizeBeforeCreate = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
         // Create the Reminder
         ReminderDTO reminderDTO = reminderMapper.toDto(reminder);
         var returnedReminderDTO = om.readValue(
@@ -190,13 +146,6 @@ class ReminderResourceIT {
         var returnedReminder = reminderMapper.toEntity(returnedReminderDTO);
         assertReminderUpdatableFieldsEquals(returnedReminder, getPersistedReminder(returnedReminder));
 
-        await()
-            .atMost(5, TimeUnit.SECONDS)
-            .untilAsserted(() -> {
-                int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-                assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore + 1);
-            });
-
         insertedReminder = returnedReminder;
     }
 
@@ -208,7 +157,6 @@ class ReminderResourceIT {
         ReminderDTO reminderDTO = reminderMapper.toDto(reminder);
 
         long databaseSizeBeforeCreate = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restReminderMockMvc
@@ -217,17 +165,14 @@ class ReminderResourceIT {
 
         // Validate the Reminder in the database
         assertSameRepositoryCount(databaseSizeBeforeCreate);
-        int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
     }
 
     @Test
     @Transactional
-    void checkTextIsRequired() throws Exception {
+    void checkTitleIsRequired() throws Exception {
         long databaseSizeBeforeTest = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
         // set the field null
-        reminder.setText(null);
+        reminder.setTitle(null);
 
         // Create the Reminder, which fails.
         ReminderDTO reminderDTO = reminderMapper.toDto(reminder);
@@ -237,16 +182,12 @@ class ReminderResourceIT {
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
-
-        int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
     }
 
     @Test
     @Transactional
     void checkCompletedIsRequired() throws Exception {
         long databaseSizeBeforeTest = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
         // set the field null
         reminder.setCompleted(null);
 
@@ -258,72 +199,6 @@ class ReminderResourceIT {
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
-
-        int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
-    }
-
-    @Test
-    @Transactional
-    void checkReminderDateIsRequired() throws Exception {
-        long databaseSizeBeforeTest = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        // set the field null
-        reminder.setReminderDate(null);
-
-        // Create the Reminder, which fails.
-        ReminderDTO reminderDTO = reminderMapper.toDto(reminder);
-
-        restReminderMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(reminderDTO)))
-            .andExpect(status().isBadRequest());
-
-        assertSameRepositoryCount(databaseSizeBeforeTest);
-
-        int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
-    }
-
-    @Test
-    @Transactional
-    void checkCreatedAtIsRequired() throws Exception {
-        long databaseSizeBeforeTest = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        // set the field null
-        reminder.setCreatedAt(null);
-
-        // Create the Reminder, which fails.
-        ReminderDTO reminderDTO = reminderMapper.toDto(reminder);
-
-        restReminderMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(reminderDTO)))
-            .andExpect(status().isBadRequest());
-
-        assertSameRepositoryCount(databaseSizeBeforeTest);
-
-        int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
-    }
-
-    @Test
-    @Transactional
-    void checkIsAllDayIsRequired() throws Exception {
-        long databaseSizeBeforeTest = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        // set the field null
-        reminder.setIsAllDay(null);
-
-        // Create the Reminder, which fails.
-        ReminderDTO reminderDTO = reminderMapper.toDto(reminder);
-
-        restReminderMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(reminderDTO)))
-            .andExpect(status().isBadRequest());
-
-        assertSameRepositoryCount(databaseSizeBeforeTest);
-
-        int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
     }
 
     @Test
@@ -338,14 +213,10 @@ class ReminderResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(reminder.getId().intValue())))
-            .andExpect(jsonPath("$.[*].text").value(hasItem(DEFAULT_TEXT)))
-            .andExpect(jsonPath("$.[*].completed").value(hasItem(DEFAULT_COMPLETED)))
-            .andExpect(jsonPath("$.[*].reminderDate").value(hasItem(DEFAULT_REMINDER_DATE.toString())))
-            .andExpect(jsonPath("$.[*].reminderTime").value(hasItem(DEFAULT_REMINDER_TIME.toString())))
-            .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
-            .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
-            .andExpect(jsonPath("$.[*].priority").value(hasItem(DEFAULT_PRIORITY.toString())))
-            .andExpect(jsonPath("$.[*].isAllDay").value(hasItem(DEFAULT_IS_ALL_DAY)));
+            .andExpect(jsonPath("$.[*].title").value(hasItem(DEFAULT_TITLE)))
+            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)))
+            .andExpect(jsonPath("$.[*].dueDate").value(hasItem(DEFAULT_DUE_DATE.toString())))
+            .andExpect(jsonPath("$.[*].completed").value(hasItem(DEFAULT_COMPLETED)));
     }
 
     @SuppressWarnings({ "unchecked" })
@@ -377,14 +248,10 @@ class ReminderResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(reminder.getId().intValue()))
-            .andExpect(jsonPath("$.text").value(DEFAULT_TEXT))
-            .andExpect(jsonPath("$.completed").value(DEFAULT_COMPLETED))
-            .andExpect(jsonPath("$.reminderDate").value(DEFAULT_REMINDER_DATE.toString()))
-            .andExpect(jsonPath("$.reminderTime").value(DEFAULT_REMINDER_TIME.toString()))
-            .andExpect(jsonPath("$.createdAt").value(DEFAULT_CREATED_AT.toString()))
-            .andExpect(jsonPath("$.updatedAt").value(DEFAULT_UPDATED_AT.toString()))
-            .andExpect(jsonPath("$.priority").value(DEFAULT_PRIORITY.toString()))
-            .andExpect(jsonPath("$.isAllDay").value(DEFAULT_IS_ALL_DAY));
+            .andExpect(jsonPath("$.title").value(DEFAULT_TITLE))
+            .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION))
+            .andExpect(jsonPath("$.dueDate").value(DEFAULT_DUE_DATE.toString()))
+            .andExpect(jsonPath("$.completed").value(DEFAULT_COMPLETED));
     }
 
     @Test
@@ -401,22 +268,12 @@ class ReminderResourceIT {
         insertedReminder = reminderRepository.saveAndFlush(reminder);
 
         long databaseSizeBeforeUpdate = getRepositoryCount();
-        reminderSearchRepository.save(reminder);
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
 
         // Update the reminder
         Reminder updatedReminder = reminderRepository.findById(reminder.getId()).orElseThrow();
         // Disconnect from session so that the updates on updatedReminder are not directly saved in db
         em.detach(updatedReminder);
-        updatedReminder
-            .text(UPDATED_TEXT)
-            .completed(UPDATED_COMPLETED)
-            .reminderDate(UPDATED_REMINDER_DATE)
-            .reminderTime(UPDATED_REMINDER_TIME)
-            .createdAt(UPDATED_CREATED_AT)
-            .updatedAt(UPDATED_UPDATED_AT)
-            .priority(UPDATED_PRIORITY)
-            .isAllDay(UPDATED_IS_ALL_DAY);
+        updatedReminder.title(UPDATED_TITLE).description(UPDATED_DESCRIPTION).dueDate(UPDATED_DUE_DATE).completed(UPDATED_COMPLETED);
         ReminderDTO reminderDTO = reminderMapper.toDto(updatedReminder);
 
         restReminderMockMvc
@@ -430,24 +287,12 @@ class ReminderResourceIT {
         // Validate the Reminder in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
         assertPersistedReminderToMatchAllProperties(updatedReminder);
-
-        await()
-            .atMost(5, TimeUnit.SECONDS)
-            .untilAsserted(() -> {
-                int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-                assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
-                List<Reminder> reminderSearchList = Streamable.of(reminderSearchRepository.findAll()).toList();
-                Reminder testReminderSearch = reminderSearchList.get(searchDatabaseSizeAfter - 1);
-
-                assertReminderAllPropertiesEquals(testReminderSearch, updatedReminder);
-            });
     }
 
     @Test
     @Transactional
     void putNonExistingReminder() throws Exception {
         long databaseSizeBeforeUpdate = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
         reminder.setId(longCount.incrementAndGet());
 
         // Create the Reminder
@@ -464,15 +309,12 @@ class ReminderResourceIT {
 
         // Validate the Reminder in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
-        int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
     }
 
     @Test
     @Transactional
     void putWithIdMismatchReminder() throws Exception {
         long databaseSizeBeforeUpdate = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
         reminder.setId(longCount.incrementAndGet());
 
         // Create the Reminder
@@ -489,15 +331,12 @@ class ReminderResourceIT {
 
         // Validate the Reminder in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
-        int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
     }
 
     @Test
     @Transactional
     void putWithMissingIdPathParamReminder() throws Exception {
         long databaseSizeBeforeUpdate = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
         reminder.setId(longCount.incrementAndGet());
 
         // Create the Reminder
@@ -510,8 +349,6 @@ class ReminderResourceIT {
 
         // Validate the Reminder in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
-        int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
     }
 
     @Test
@@ -526,7 +363,7 @@ class ReminderResourceIT {
         Reminder partialUpdatedReminder = new Reminder();
         partialUpdatedReminder.setId(reminder.getId());
 
-        partialUpdatedReminder.reminderDate(UPDATED_REMINDER_DATE).reminderTime(UPDATED_REMINDER_TIME).isAllDay(UPDATED_IS_ALL_DAY);
+        partialUpdatedReminder.description(UPDATED_DESCRIPTION).dueDate(UPDATED_DUE_DATE);
 
         restReminderMockMvc
             .perform(
@@ -554,15 +391,7 @@ class ReminderResourceIT {
         Reminder partialUpdatedReminder = new Reminder();
         partialUpdatedReminder.setId(reminder.getId());
 
-        partialUpdatedReminder
-            .text(UPDATED_TEXT)
-            .completed(UPDATED_COMPLETED)
-            .reminderDate(UPDATED_REMINDER_DATE)
-            .reminderTime(UPDATED_REMINDER_TIME)
-            .createdAt(UPDATED_CREATED_AT)
-            .updatedAt(UPDATED_UPDATED_AT)
-            .priority(UPDATED_PRIORITY)
-            .isAllDay(UPDATED_IS_ALL_DAY);
+        partialUpdatedReminder.title(UPDATED_TITLE).description(UPDATED_DESCRIPTION).dueDate(UPDATED_DUE_DATE).completed(UPDATED_COMPLETED);
 
         restReminderMockMvc
             .perform(
@@ -582,7 +411,6 @@ class ReminderResourceIT {
     @Transactional
     void patchNonExistingReminder() throws Exception {
         long databaseSizeBeforeUpdate = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
         reminder.setId(longCount.incrementAndGet());
 
         // Create the Reminder
@@ -599,15 +427,12 @@ class ReminderResourceIT {
 
         // Validate the Reminder in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
-        int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
     }
 
     @Test
     @Transactional
     void patchWithIdMismatchReminder() throws Exception {
         long databaseSizeBeforeUpdate = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
         reminder.setId(longCount.incrementAndGet());
 
         // Create the Reminder
@@ -624,15 +449,12 @@ class ReminderResourceIT {
 
         // Validate the Reminder in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
-        int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
     }
 
     @Test
     @Transactional
     void patchWithMissingIdPathParamReminder() throws Exception {
         long databaseSizeBeforeUpdate = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
         reminder.setId(longCount.incrementAndGet());
 
         // Create the Reminder
@@ -645,8 +467,6 @@ class ReminderResourceIT {
 
         // Validate the Reminder in the database
         assertSameRepositoryCount(databaseSizeBeforeUpdate);
-        int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore);
     }
 
     @Test
@@ -654,12 +474,8 @@ class ReminderResourceIT {
     void deleteReminder() throws Exception {
         // Initialize the database
         insertedReminder = reminderRepository.saveAndFlush(reminder);
-        reminderRepository.save(reminder);
-        reminderSearchRepository.save(reminder);
 
         long databaseSizeBeforeDelete = getRepositoryCount();
-        int searchDatabaseSizeBefore = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        assertThat(searchDatabaseSizeBefore).isEqualTo(databaseSizeBeforeDelete);
 
         // Delete the reminder
         restReminderMockMvc
@@ -668,31 +484,6 @@ class ReminderResourceIT {
 
         // Validate the database contains one less item
         assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
-        int searchDatabaseSizeAfter = IterableUtil.sizeOf(reminderSearchRepository.findAll());
-        assertThat(searchDatabaseSizeAfter).isEqualTo(searchDatabaseSizeBefore - 1);
-    }
-
-    @Test
-    @Transactional
-    void searchReminder() throws Exception {
-        // Initialize the database
-        insertedReminder = reminderRepository.saveAndFlush(reminder);
-        reminderSearchRepository.save(reminder);
-
-        // Search the reminder
-        restReminderMockMvc
-            .perform(get(ENTITY_SEARCH_API_URL + "?query=id:" + reminder.getId()))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].id").value(hasItem(reminder.getId().intValue())))
-            .andExpect(jsonPath("$.[*].text").value(hasItem(DEFAULT_TEXT)))
-            .andExpect(jsonPath("$.[*].completed").value(hasItem(DEFAULT_COMPLETED)))
-            .andExpect(jsonPath("$.[*].reminderDate").value(hasItem(DEFAULT_REMINDER_DATE.toString())))
-            .andExpect(jsonPath("$.[*].reminderTime").value(hasItem(DEFAULT_REMINDER_TIME.toString())))
-            .andExpect(jsonPath("$.[*].createdAt").value(hasItem(DEFAULT_CREATED_AT.toString())))
-            .andExpect(jsonPath("$.[*].updatedAt").value(hasItem(DEFAULT_UPDATED_AT.toString())))
-            .andExpect(jsonPath("$.[*].priority").value(hasItem(DEFAULT_PRIORITY.toString())))
-            .andExpect(jsonPath("$.[*].isAllDay").value(hasItem(DEFAULT_IS_ALL_DAY)));
     }
 
     protected long getRepositoryCount() {

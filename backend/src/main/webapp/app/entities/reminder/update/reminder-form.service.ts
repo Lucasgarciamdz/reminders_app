@@ -19,28 +19,24 @@ type ReminderFormGroupInput = IReminder | PartialWithRequiredKeyOf<NewReminder>;
 /**
  * Type that converts some properties for forms.
  */
-type FormValueOf<T extends IReminder | NewReminder> = Omit<T, 'createdAt' | 'updatedAt'> & {
-  createdAt?: string | null;
-  updatedAt?: string | null;
+type FormValueOf<T extends IReminder | NewReminder> = Omit<T, 'dueDate'> & {
+  dueDate?: string | null;
 };
 
 type ReminderFormRawValue = FormValueOf<IReminder>;
 
 type NewReminderFormRawValue = FormValueOf<NewReminder>;
 
-type ReminderFormDefaults = Pick<NewReminder, 'id' | 'completed' | 'createdAt' | 'updatedAt' | 'isAllDay'>;
+type ReminderFormDefaults = Pick<NewReminder, 'id' | 'dueDate' | 'completed'>;
 
 type ReminderFormGroupContent = {
   id: FormControl<ReminderFormRawValue['id'] | NewReminder['id']>;
-  text: FormControl<ReminderFormRawValue['text']>;
+  title: FormControl<ReminderFormRawValue['title']>;
+  description: FormControl<ReminderFormRawValue['description']>;
+  dueDate: FormControl<ReminderFormRawValue['dueDate']>;
   completed: FormControl<ReminderFormRawValue['completed']>;
-  reminderDate: FormControl<ReminderFormRawValue['reminderDate']>;
-  reminderTime: FormControl<ReminderFormRawValue['reminderTime']>;
-  createdAt: FormControl<ReminderFormRawValue['createdAt']>;
-  updatedAt: FormControl<ReminderFormRawValue['updatedAt']>;
-  priority: FormControl<ReminderFormRawValue['priority']>;
-  isAllDay: FormControl<ReminderFormRawValue['isAllDay']>;
   user: FormControl<ReminderFormRawValue['user']>;
+  category: FormControl<ReminderFormRawValue['category']>;
 };
 
 export type ReminderFormGroup = FormGroup<ReminderFormGroupContent>;
@@ -60,25 +56,16 @@ export class ReminderFormService {
           validators: [Validators.required],
         },
       ),
-      text: new FormControl(reminderRawValue.text, {
-        validators: [Validators.required, Validators.maxLength(500)],
+      title: new FormControl(reminderRawValue.title, {
+        validators: [Validators.required, Validators.minLength(3)],
       }),
+      description: new FormControl(reminderRawValue.description),
+      dueDate: new FormControl(reminderRawValue.dueDate),
       completed: new FormControl(reminderRawValue.completed, {
         validators: [Validators.required],
       }),
-      reminderDate: new FormControl(reminderRawValue.reminderDate, {
-        validators: [Validators.required],
-      }),
-      reminderTime: new FormControl(reminderRawValue.reminderTime),
-      createdAt: new FormControl(reminderRawValue.createdAt, {
-        validators: [Validators.required],
-      }),
-      updatedAt: new FormControl(reminderRawValue.updatedAt),
-      priority: new FormControl(reminderRawValue.priority),
-      isAllDay: new FormControl(reminderRawValue.isAllDay, {
-        validators: [Validators.required],
-      }),
       user: new FormControl(reminderRawValue.user),
+      category: new FormControl(reminderRawValue.category),
     });
   }
 
@@ -101,18 +88,15 @@ export class ReminderFormService {
 
     return {
       id: null,
+      dueDate: currentTime,
       completed: false,
-      createdAt: currentTime,
-      updatedAt: currentTime,
-      isAllDay: false,
     };
   }
 
   private convertReminderRawValueToReminder(rawReminder: ReminderFormRawValue | NewReminderFormRawValue): IReminder | NewReminder {
     return {
       ...rawReminder,
-      createdAt: dayjs(rawReminder.createdAt, DATE_TIME_FORMAT),
-      updatedAt: dayjs(rawReminder.updatedAt, DATE_TIME_FORMAT),
+      dueDate: dayjs(rawReminder.dueDate, DATE_TIME_FORMAT),
     };
   }
 
@@ -121,8 +105,7 @@ export class ReminderFormService {
   ): ReminderFormRawValue | PartialWithRequiredKeyOf<NewReminderFormRawValue> {
     return {
       ...reminder,
-      createdAt: reminder.createdAt ? reminder.createdAt.format(DATE_TIME_FORMAT) : undefined,
-      updatedAt: reminder.updatedAt ? reminder.updatedAt.format(DATE_TIME_FORMAT) : undefined,
+      dueDate: reminder.dueDate ? reminder.dueDate.format(DATE_TIME_FORMAT) : undefined,
     };
   }
 }

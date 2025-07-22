@@ -9,7 +9,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IUser } from 'app/entities/user/user.model';
 import { UserService } from 'app/entities/user/service/user.service';
-import { Priority } from 'app/entities/enumerations/priority.model';
+import { ICategory } from 'app/entities/category/category.model';
+import { CategoryService } from 'app/entities/category/service/category.service';
 import { ReminderService } from '../service/reminder.service';
 import { IReminder } from '../reminder.model';
 import { ReminderFormGroup, ReminderFormService } from './reminder-form.service';
@@ -22,19 +23,22 @@ import { ReminderFormGroup, ReminderFormService } from './reminder-form.service'
 export class ReminderUpdateComponent implements OnInit {
   isSaving = false;
   reminder: IReminder | null = null;
-  priorityValues = Object.keys(Priority);
 
   usersSharedCollection: IUser[] = [];
+  categoriesSharedCollection: ICategory[] = [];
 
   protected reminderService = inject(ReminderService);
   protected reminderFormService = inject(ReminderFormService);
   protected userService = inject(UserService);
+  protected categoryService = inject(CategoryService);
   protected activatedRoute = inject(ActivatedRoute);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: ReminderFormGroup = this.reminderFormService.createReminderFormGroup();
 
   compareUser = (o1: IUser | null, o2: IUser | null): boolean => this.userService.compareUser(o1, o2);
+
+  compareCategory = (o1: ICategory | null, o2: ICategory | null): boolean => this.categoryService.compareCategory(o1, o2);
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ reminder }) => {
@@ -85,6 +89,10 @@ export class ReminderUpdateComponent implements OnInit {
     this.reminderFormService.resetForm(this.editForm, reminder);
 
     this.usersSharedCollection = this.userService.addUserToCollectionIfMissing<IUser>(this.usersSharedCollection, reminder.user);
+    this.categoriesSharedCollection = this.categoryService.addCategoryToCollectionIfMissing<ICategory>(
+      this.categoriesSharedCollection,
+      reminder.category,
+    );
   }
 
   protected loadRelationshipsOptions(): void {
@@ -93,5 +101,15 @@ export class ReminderUpdateComponent implements OnInit {
       .pipe(map((res: HttpResponse<IUser[]>) => res.body ?? []))
       .pipe(map((users: IUser[]) => this.userService.addUserToCollectionIfMissing<IUser>(users, this.reminder?.user)))
       .subscribe((users: IUser[]) => (this.usersSharedCollection = users));
+
+    this.categoryService
+      .query()
+      .pipe(map((res: HttpResponse<ICategory[]>) => res.body ?? []))
+      .pipe(
+        map((categories: ICategory[]) =>
+          this.categoryService.addCategoryToCollectionIfMissing<ICategory>(categories, this.reminder?.category),
+        ),
+      )
+      .subscribe((categories: ICategory[]) => (this.categoriesSharedCollection = categories));
   }
 }

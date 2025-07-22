@@ -4,42 +4,28 @@ import { IReminder, NewReminder } from './reminder.model';
 
 export const sampleWithRequiredData: IReminder = {
   id: 1166,
-  text: 'lined',
+  title: 'lined',
   completed: true,
-  reminderDate: dayjs('2025-07-21'),
-  createdAt: dayjs('2025-07-20T20:34'),
-  isAllDay: true,
 };
 
 export const sampleWithPartialData: IReminder = {
-  id: 7975,
-  text: 'that gulp clear',
+  id: 5295,
+  title: 'boohoo',
+  description: 'gulp clear',
   completed: true,
-  reminderDate: dayjs('2025-07-20'),
-  reminderTime: '11:26:00',
-  createdAt: dayjs('2025-07-20T16:06'),
-  priority: 'MEDIUM',
-  isAllDay: false,
 };
 
 export const sampleWithFullData: IReminder = {
   id: 5366,
-  text: 'once athwart',
+  title: 'once athwart',
+  description: 'kinase popularize nocturnal',
+  dueDate: dayjs('2025-07-21T12:30'),
   completed: false,
-  reminderDate: dayjs('2025-07-21'),
-  reminderTime: '01:53:00',
-  createdAt: dayjs('2025-07-21T04:23'),
-  updatedAt: dayjs('2025-07-20T16:29'),
-  priority: 'MEDIUM',
-  isAllDay: false,
 };
 
 export const sampleWithNewData: NewReminder = {
-  text: 'idealistic once',
+  title: 'idealistic once',
   completed: true,
-  reminderDate: dayjs('2025-07-21'),
-  createdAt: dayjs('2025-07-20T21:06'),
-  isAllDay: true,
   id: null,
 };
 
