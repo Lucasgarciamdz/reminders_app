@@ -32,6 +32,7 @@ describe('Category Management Component', () => {
                 page: '1',
                 size: '1',
                 sort: 'id,desc',
+                'filter[someId.in]': 'dc4279ea-cfb9-11ec-9d64-0242ac120002',
               }),
             ),
             snapshot: {
@@ -40,6 +41,7 @@ describe('Category Management Component', () => {
                 page: '1',
                 size: '1',
                 sort: 'id,desc',
+                'filter[someId.in]': 'dc4279ea-cfb9-11ec-9d64-0242ac120002',
               }),
             },
           },
@@ -112,12 +114,28 @@ describe('Category Management Component', () => {
     );
   });
 
+  it('should load a page', () => {
+    // WHEN
+    comp.navigateToPage(1);
+
+    // THEN
+    expect(routerNavigateSpy).toHaveBeenCalled();
+  });
+
   it('should calculate the sort attribute for an id', () => {
     // WHEN
     comp.ngOnInit();
 
     // THEN
     expect(service.query).toHaveBeenLastCalledWith(expect.objectContaining({ sort: ['id,desc'] }));
+  });
+
+  it('should calculate the filter attribute', () => {
+    // WHEN
+    comp.ngOnInit();
+
+    // THEN
+    expect(service.query).toHaveBeenLastCalledWith(expect.objectContaining({ 'someId.in': ['dc4279ea-cfb9-11ec-9d64-0242ac120002'] }));
   });
 
   describe('delete', () => {

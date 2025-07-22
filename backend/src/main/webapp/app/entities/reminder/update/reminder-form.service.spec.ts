@@ -23,9 +23,13 @@ describe('Reminder Form Service', () => {
             title: expect.any(Object),
             description: expect.any(Object),
             dueDate: expect.any(Object),
-            completed: expect.any(Object),
-            user: expect.any(Object),
+            isCompleted: expect.any(Object),
+            priority: expect.any(Object),
+            createdDate: expect.any(Object),
+            lastModifiedDate: expect.any(Object),
             category: expect.any(Object),
+            user: expect.any(Object),
+            tags: expect.any(Object),
           }),
         );
       });
@@ -39,9 +43,13 @@ describe('Reminder Form Service', () => {
             title: expect.any(Object),
             description: expect.any(Object),
             dueDate: expect.any(Object),
-            completed: expect.any(Object),
-            user: expect.any(Object),
+            isCompleted: expect.any(Object),
+            priority: expect.any(Object),
+            createdDate: expect.any(Object),
+            lastModifiedDate: expect.any(Object),
             category: expect.any(Object),
+            user: expect.any(Object),
+            tags: expect.any(Object),
           }),
         );
       });

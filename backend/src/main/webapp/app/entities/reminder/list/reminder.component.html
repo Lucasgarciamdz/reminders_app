@@ -15,7 +15,7 @@
         [routerLink]="['/reminder/new']"
       >
         <fa-icon icon="plus"></fa-icon>
-        <span>Create a new Reminder</span>
+        <span class="hidden-sm-down">Create a new Reminder</span>
       </button>
     </div>
   </h2>
@@ -23,6 +23,34 @@
   <jhi-alert-error />
 
   <jhi-alert />
+
+  <form name="searchForm" class="row row-cols-sm-auto align-items-center">
+    <div class="col-sm-12">
+      <div class="input-group w-100 mt-3">
+        <label class="visually-hidden" for="currentSearch">Search for Reminder</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="currentSearch"
+          id="currentSearch"
+          name="currentSearch"
+          placeholder="Search for Reminder"
+        />
+
+        <button class="btn btn-info" (click)="search(currentSearch)">
+          <fa-icon icon="search"></fa-icon>
+        </button>
+
+        @if (currentSearch) {
+          <button class="btn btn-danger" (click)="search('')">
+            <fa-icon icon="trash-alt"></fa-icon>
+          </button>
+        }
+      </div>
+    </div>
+  </form>
+
+  <jhi-filter [filters]="filters" />
 
   @if (reminders().length === 0) {
     <div class="alert alert-warning" id="no-result">
@@ -43,15 +71,17 @@
             <th scope="col" jhiSortBy="title">
               <div class="d-flex">
                 <span>Title</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
+                @if (!currentSearch) {
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                }
               </div>
             </th>
             <th scope="col" jhiSortBy="description">
               <div class="d-flex">
                 <span>Description</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
+                @if (!currentSearch) {
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                }
               </div>
             </th>
             <th scope="col" jhiSortBy="dueDate">
@@ -61,22 +91,44 @@
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col" jhiSortBy="completed">
+            <th scope="col" jhiSortBy="isCompleted">
               <div class="d-flex">
-                <span>Completed</span>
+                <span>Is Completed</span>
 
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col" jhiSortBy="user.login">
+            <th scope="col" jhiSortBy="priority">
               <div class="d-flex">
-                <span>User</span>
+                <span>Priority</span>
+                @if (!currentSearch) {
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                }
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="createdDate">
+              <div class="d-flex">
+                <span>Created Date</span>
+
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
-            <th scope="col" jhiSortBy="category.name">
+            <th scope="col" jhiSortBy="lastModifiedDate">
+              <div class="d-flex">
+                <span>Last Modified Date</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="category.id">
               <div class="d-flex">
                 <span>Category</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="user.id">
+              <div class="d-flex">
+                <span>User</span>
                 <fa-icon class="p-1" icon="sort"></fa-icon>
               </div>
             </th>
@@ -92,16 +144,19 @@
               <td>{{ reminder.title }}</td>
               <td>{{ reminder.description }}</td>
               <td>{{ reminder.dueDate | formatMediumDatetime }}</td>
-              <td>{{ reminder.completed }}</td>
-              <td>
-                {{ reminder.user?.login }}
-              </td>
+              <td>{{ reminder.isCompleted }}</td>
+              <td>{{ { null: '', LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH', URGENT: 'URGENT' }[reminder.priority ?? 'null'] }}</td>
+              <td>{{ reminder.createdDate | formatMediumDatetime }}</td>
+              <td>{{ reminder.lastModifiedDate | formatMediumDatetime }}</td>
               <td>
                 @if (reminder.category) {
                   <div>
-                    <a [routerLink]="['/category', reminder.category.id, 'view']">{{ reminder.category.name }}</a>
+                    <a [routerLink]="['/category', reminder.category.id, 'view']">{{ reminder.category.id }}</a>
                   </div>
                 }
+              </td>
+              <td>
+                {{ reminder.user?.id }}
               </td>
               <td class="text-end">
                 <div class="btn-group">

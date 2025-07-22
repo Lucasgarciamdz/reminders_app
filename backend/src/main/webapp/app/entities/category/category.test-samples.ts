@@ -6,13 +6,17 @@ export const sampleWithRequiredData: ICategory = {
 };
 
 export const sampleWithPartialData: ICategory = {
-  id: 15504,
-  name: 'dispose',
+  id: 7001,
+  name: 'mmm summarise far',
+  color: 'black',
+  description: '../fake-data/blob/hipster.txt',
 };
 
 export const sampleWithFullData: ICategory = {
   id: 28780,
   name: 'ouch',
+  color: 'fuchsia',
+  description: '../fake-data/blob/hipster.txt',
 };
 
 export const sampleWithNewData: NewCategory = {

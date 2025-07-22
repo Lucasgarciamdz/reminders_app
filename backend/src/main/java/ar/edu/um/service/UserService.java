@@ -5,6 +5,7 @@ import ar.edu.um.domain.Authority;
 import ar.edu.um.domain.User;
 import ar.edu.um.repository.AuthorityRepository;
 import ar.edu.um.repository.UserRepository;
+import ar.edu.um.repository.search.UserSearchRepository;
 import ar.edu.um.security.AuthoritiesConstants;
 import ar.edu.um.security.SecurityUtils;
 import ar.edu.um.service.dto.AdminUserDTO;
@@ -37,6 +38,8 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final UserSearchRepository userSearchRepository;
+
     private final AuthorityRepository authorityRepository;
 
     private final CacheManager cacheManager;
@@ -44,11 +47,13 @@ public class UserService {
     public UserService(
         UserRepository userRepository,
         PasswordEncoder passwordEncoder,
+        UserSearchRepository userSearchRepository,
         AuthorityRepository authorityRepository,
         CacheManager cacheManager
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userSearchRepository = userSearchRepository;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
     }
@@ -61,6 +66,7 @@ public class UserService {
                 // activate given user for the registration key.
                 user.setActivated(true);
                 user.setActivationKey(null);
+                userSearchRepository.save(user);
                 this.clearUserCaches(user);
                 LOG.debug("Activated user: {}", user);
                 return user;
@@ -123,13 +129,14 @@ public class UserService {
         newUser.setImageUrl(userDTO.getImageUrl());
         newUser.setLangKey(userDTO.getLangKey());
         // new user is not active
-        newUser.setActivated(false);
+        newUser.setActivated(true);
         // new user gets registration key
         newUser.setActivationKey(RandomUtil.generateActivationKey());
         Set<Authority> authorities = new HashSet<>();
         authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
         newUser.setAuthorities(authorities);
         userRepository.save(newUser);
+        userSearchRepository.save(newUser);
         this.clearUserCaches(newUser);
         LOG.debug("Created Information for User: {}", newUser);
         return newUser;
@@ -175,6 +182,7 @@ public class UserService {
             user.setAuthorities(authorities);
         }
         userRepository.save(user);
+        userSearchRepository.index(user);
         this.clearUserCaches(user);
         LOG.debug("Created Information for User: {}", user);
         return user;
@@ -211,6 +219,7 @@ public class UserService {
                     .map(Optional::get)
                     .forEach(managedAuthorities::add);
                 userRepository.save(user);
+                userSearchRepository.index(user);
                 this.clearUserCaches(user);
                 LOG.debug("Changed Information for User: {}", user);
                 return user;
@@ -223,6 +232,7 @@ public class UserService {
             .findOneByLogin(login)
             .ifPresent(user -> {
                 userRepository.delete(user);
+                userSearchRepository.deleteFromIndex(user);
                 this.clearUserCaches(user);
                 LOG.debug("Deleted User: {}", user);
             });
@@ -249,6 +259,7 @@ public class UserService {
                 user.setLangKey(langKey);
                 user.setImageUrl(imageUrl);
                 userRepository.save(user);
+                userSearchRepository.index(user);
                 this.clearUserCaches(user);
                 LOG.debug("Changed Information for User: {}", user);
             });
@@ -302,6 +313,7 @@ public class UserService {
             .forEach(user -> {
                 LOG.debug("Deleting not activated user {}", user.getLogin());
                 userRepository.delete(user);
+                userSearchRepository.deleteFromIndex(user);
                 this.clearUserCaches(user);
             });
     }

@@ -8,7 +8,14 @@
     <!--
         Added the constraints for entity Reminder.
     -->
-    <changeSet id="20250722004131-2" author="jhipster">
+    <changeSet id="20250722132923-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="category_id"
+                                 baseTableName="reminder"
+                                 constraintName="fk_reminder__category_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="category"
+                                 />
 
         <addForeignKeyConstraint baseColumnNames="user_id"
                                  baseTableName="reminder"
@@ -17,11 +24,18 @@
                                  referencedTableName="jhi_user"
                                  />
 
-        <addForeignKeyConstraint baseColumnNames="category_id"
-                                 baseTableName="reminder"
-                                 constraintName="fk_reminder__category_id"
+        <addForeignKeyConstraint baseColumnNames="reminder_id"
+                                 baseTableName="rel_reminder__tags"
+                                 constraintName="fk_rel_reminder__tags__reminder_id"
                                  referencedColumnNames="id"
-                                 referencedTableName="category"
+                                 referencedTableName="reminder"
+                                 />
+
+        <addForeignKeyConstraint baseColumnNames="tags_id"
+                                 baseTableName="rel_reminder__tags"
+                                 constraintName="fk_rel_reminder__tags__tags_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="tag"
                                  />
     </changeSet>
 </databaseChangeLog>

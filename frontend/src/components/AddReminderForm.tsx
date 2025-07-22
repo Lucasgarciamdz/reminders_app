@@ -31,7 +31,8 @@ import { hideAddReminderForm, selectShowAddForm, addNotification } from '../stor
 import { AppDispatch } from '../store';
 
 interface FormData {
-  text: string;
+  title: string;
+  description?: string;
   reminderDate: dayjs.Dayjs;
   reminderTime: dayjs.Dayjs | null;
   isAllDay: boolean;
@@ -51,7 +52,8 @@ const AddReminderForm: React.FC = () => {
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
-      text: '',
+      title: '',
+      description: '',
       reminderDate: dayjs(),
       reminderTime: dayjs(),
       isAllDay: false,
@@ -66,21 +68,30 @@ const AddReminderForm: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // Format the date and time for the API
-      const reminderDate = data.reminderDate.format('YYYY-MM-DD');
-      let reminderTime: string | undefined;
+      // Format the date and time for the API - combine date and time into ISO datetime
+      let dueDate: string;
       
-      if (!data.isAllDay && data.reminderTime) {
-        reminderTime = data.reminderTime.format('HH:mm:ss');
+      if (data.isAllDay) {
+        // For all-day reminders, set time to start of day
+        dueDate = data.reminderDate.startOf('day').toISOString();
+      } else if (data.reminderTime) {
+        // Combine date and time
+        const combinedDateTime = data.reminderDate
+          .hour(data.reminderTime.hour())
+          .minute(data.reminderTime.minute())
+          .second(0);
+        dueDate = combinedDateTime.toISOString();
+      } else {
+        // Default to start of day if no time specified
+        dueDate = data.reminderDate.startOf('day').toISOString();
       }
 
       const reminderData: CreateReminderRequest = {
-        text: data.text.trim(),
-        reminderDate,
-        reminderTime,
-        isAllDay: data.isAllDay,
+        title: data.title.trim(),
+        description: data.description?.trim() || undefined,
+        dueDate,
+        isCompleted: false,
         priority: data.priority,
-        completed: false,
       };
 
       await dispatch(createReminder(reminderData)).unwrap();
@@ -126,39 +137,60 @@ const AddReminderForm: React.FC = () => {
         }}
       >
         <DialogTitle>
-          <Typography variant="h6" component="h2">
-            Add New Reminder
-          </Typography>
+          Add New Reminder
         </DialogTitle>
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogContent dividers>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {/* Reminder Text */}
+            {/* Reminder Title */}
             <Controller
-              name="text"
+              name="title"
               control={control}
               rules={{
-                required: 'Reminder text is required',
+                required: 'Reminder title is required',
                 maxLength: {
-                  value: 500,
-                  message: 'Reminder text must be less than 500 characters'
+                  value: 255,
+                  message: 'Reminder title must be less than 255 characters'
                 },
                 minLength: {
                   value: 1,
-                  message: 'Reminder text cannot be empty'
+                  message: 'Reminder title cannot be empty'
                 }
               }}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Reminder Text"
+                  label="Reminder Title"
+                  fullWidth
+                  error={!!errors.title}
+                  helperText={errors.title?.message}
+                  placeholder="Enter your reminder title..."
+                  variant="outlined"
+                />
+              )}
+            />
+
+            {/* Description */}
+            <Controller
+              name="description"
+              control={control}
+              rules={{
+                maxLength: {
+                  value: 1000,
+                  message: 'Description must be less than 1000 characters'
+                }
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Description (Optional)"
                   multiline
                   rows={3}
                   fullWidth
-                  error={!!errors.text}
-                  helperText={errors.text?.message}
-                  placeholder="Enter your reminder..."
+                  error={!!errors.description}
+                  helperText={errors.description?.message}
+                  placeholder="Enter additional details..."
                   variant="outlined"
                 />
               )}

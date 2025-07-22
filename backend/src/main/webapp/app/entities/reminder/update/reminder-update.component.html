@@ -22,8 +22,8 @@
               @if (editForm.get('title')?.errors?.required) {
                 <small class="form-text text-danger">This field is required.</small>
               }
-              @if (editForm.get('title')?.errors?.minlength) {
-                <small class="form-text text-danger">This field is required to be at least 3 characters.</small>
+              @if (editForm.get('title')?.errors?.maxlength) {
+                <small class="form-text text-danger">This field cannot be longer than 255 characters.</small>
               }
             </div>
           }
@@ -31,16 +31,16 @@
 
         <div class="mb-3">
           <label class="form-label" for="field_description">Description</label>
-          <input
-            type="text"
+          <textarea
             class="form-control"
             name="description"
             id="field_description"
             data-cy="description"
             formControlName="description"
-          />
+          ></textarea>
         </div>
 
+        @let dueDateRef = editForm.get('dueDate')!;
         <div class="mb-3">
           <label class="form-label" for="field_dueDate">Due Date</label>
           <div class="d-flex">
@@ -54,29 +54,95 @@
               placeholder="YYYY-MM-DD HH:mm"
             />
           </div>
+          @if (dueDateRef.invalid && (dueDateRef.dirty || dueDateRef.touched)) {
+            <div>
+              @if (editForm.get('dueDate')?.errors?.required) {
+                <small class="form-text text-danger">This field is required.</small>
+              }
+              <small class="form-text text-danger" [hidden]="!editForm.get('dueDate')?.errors?.datetimelocal"
+                >This field should be a date and time.</small
+              >
+            </div>
+          }
         </div>
 
-        @let completedRef = editForm.get('completed')!;
+        @let isCompletedRef = editForm.get('isCompleted')!;
         <div class="mb-3">
-          <label class="form-label" for="field_completed">Completed</label>
-          <input type="checkbox" class="form-check" name="completed" id="field_completed" data-cy="completed" formControlName="completed" />
-          @if (completedRef.invalid && (completedRef.dirty || completedRef.touched)) {
+          <label class="form-label" for="field_isCompleted">Is Completed</label>
+          <input
+            type="checkbox"
+            class="form-check"
+            name="isCompleted"
+            id="field_isCompleted"
+            data-cy="isCompleted"
+            formControlName="isCompleted"
+          />
+          @if (isCompletedRef.invalid && (isCompletedRef.dirty || isCompletedRef.touched)) {
             <div>
-              @if (editForm.get('completed')?.errors?.required) {
+              @if (editForm.get('isCompleted')?.errors?.required) {
                 <small class="form-text text-danger">This field is required.</small>
               }
             </div>
           }
         </div>
 
+        @let priorityRef = editForm.get('priority')!;
         <div class="mb-3">
-          <label class="form-label" for="field_user">User</label>
-          <select class="form-control" id="field_user" data-cy="user" name="user" formControlName="user" [compareWith]="compareUser">
+          <label class="form-label" for="field_priority">Priority</label>
+          <select class="form-control" name="priority" formControlName="priority" id="field_priority" data-cy="priority">
             <option [ngValue]="null"></option>
-            @for (userOption of usersSharedCollection; track $index) {
-              <option [ngValue]="userOption">{{ userOption.login }}</option>
+            @for (priority of priorityValues; track $index) {
+              <option [value]="priority">{{ { null: '', LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH', URGENT: 'URGENT' }[priority] }}</option>
             }
           </select>
+          @if (priorityRef.invalid && (priorityRef.dirty || priorityRef.touched)) {
+            <div>
+              @if (editForm.get('priority')?.errors?.required) {
+                <small class="form-text text-danger">This field is required.</small>
+              }
+            </div>
+          }
+        </div>
+
+        @let createdDateRef = editForm.get('createdDate')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_createdDate">Created Date</label>
+          <div class="d-flex">
+            <input
+              id="field_createdDate"
+              data-cy="createdDate"
+              type="datetime-local"
+              class="form-control"
+              name="createdDate"
+              formControlName="createdDate"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+          @if (createdDateRef.invalid && (createdDateRef.dirty || createdDateRef.touched)) {
+            <div>
+              @if (editForm.get('createdDate')?.errors?.required) {
+                <small class="form-text text-danger">This field is required.</small>
+              }
+              <small class="form-text text-danger" [hidden]="!editForm.get('createdDate')?.errors?.datetimelocal"
+                >This field should be a date and time.</small
+              >
+            </div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_lastModifiedDate">Last Modified Date</label>
+          <div class="d-flex">
+            <input
+              id="field_lastModifiedDate"
+              data-cy="lastModifiedDate"
+              type="datetime-local"
+              class="form-control"
+              name="lastModifiedDate"
+              formControlName="lastModifiedDate"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
         </div>
 
         <div class="mb-3">
@@ -91,7 +157,34 @@
           >
             <option [ngValue]="null"></option>
             @for (categoryOption of categoriesSharedCollection; track $index) {
-              <option [ngValue]="categoryOption">{{ categoryOption.name }}</option>
+              <option [ngValue]="categoryOption">{{ categoryOption.id }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="field_user">User</label>
+          <select class="form-control" id="field_user" data-cy="user" name="user" formControlName="user" [compareWith]="compareUser">
+            <option [ngValue]="null"></option>
+            @for (userOption of usersSharedCollection; track $index) {
+              <option [ngValue]="userOption">{{ userOption.id }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="field_tags">Tags</label>
+          <select
+            class="form-control"
+            id="field_tags"
+            data-cy="tags"
+            multiple
+            name="tags"
+            formControlName="tags"
+            [compareWith]="compareTag"
+          >
+            @for (tagOption of tagsSharedCollection; track $index) {
+              <option [ngValue]="tagOption">{{ tagOption.id }}</option>
             }
           </select>
         </div>

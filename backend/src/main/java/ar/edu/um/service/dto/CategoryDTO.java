@@ -1,6 +1,6 @@
 package ar.edu.um.service.dto;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.util.Objects;
@@ -8,15 +8,20 @@ import java.util.Objects;
 /**
  * A DTO for the {@link ar.edu.um.domain.Category} entity.
  */
-@Schema(description = "The Category entity for grouping reminders.")
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class CategoryDTO implements Serializable {
 
     private Long id;
 
     @NotNull
-    @Size(min = 2)
+    @Size(max = 100)
     private String name;
+
+    @Size(max = 7)
+    private String color;
+
+    @Lob
+    private String description;
 
     public Long getId() {
         return id;
@@ -32,6 +37,22 @@ public class CategoryDTO implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -61,6 +82,8 @@ public class CategoryDTO implements Serializable {
         return "CategoryDTO{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
+            ", color='" + getColor() + "'" +
+            ", description='" + getDescription() + "'" +
             "}";
     }
 }

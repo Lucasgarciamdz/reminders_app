@@ -1,130 +1,98 @@
-// Import Workbox from CDN
-importScripts('https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-sw.js');
+// Simple service worker for reminders PWA
+console.log('Service Worker loaded');
 
-// Initialize Workbox
-if (workbox) {
-  console.log('Workbox is loaded');
-  
-  // Enable debug mode in development
-  if (process.env.NODE_ENV === 'development') {
-    workbox.setConfig({ debug: true });
-  }
-} else {
-  console.log('Workbox failed to load');
-}
+const CACHE_NAME = 'reminders-cache-v1';
+const API_CACHE_NAME = 'reminders-api-cache-v1';
 
-// Precache all static assets
-workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
+// Files to cache
+const urlsToCache = [
+  '/',
+  '/static/js/bundle.js',
+  '/static/css/main.css',
+  '/manifest.json'
+];
 
-// Clean up outdated caches
-workbox.precaching.cleanupOutdatedCaches();
-
-// Cache API responses with network-first strategy
-workbox.routing.registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/'),
-  new workbox.strategies.NetworkFirst({
-    cacheName: 'api-cache',
-    networkTimeoutSeconds: 3,
-    plugins: [
-      {
-        cacheKeyWillBeUsed: async ({ request }) => {
-          return `${request.url}?${Date.now()}`;
-        },
-      },
-    ],
-  })
-);
-
-// Cache images with cache-first strategy
-workbox.routing.registerRoute(
-  ({ request }) => request.destination === 'image',
-  new workbox.strategies.CacheFirst({
-    cacheName: 'images-cache',
-    plugins: [
-      new workbox.expiration.ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
-      }),
-      {
-        cacheWillUpdate: async ({ response }) => {
-          return response.status === 200 ? response : null;
-        },
-      },
-    ],
-  })
-);
-
-// Cache CSS and JS files with stale-while-revalidate
-workbox.routing.registerRoute(
-  ({ request }) =>
-    request.destination === 'style' || request.destination === 'script',
-  new workbox.strategies.StaleWhileRevalidate({
-    cacheName: 'static-resources',
-  })
-);
-
-// Background sync for offline operations
-const bgSyncQueue = new workbox.backgroundSync.Queue('reminder-sync', {
-  onSync: async ({ queue }) => {
-    let entry;
-    while ((entry = await queue.shiftRequest())) {
-      try {
-        await fetch(entry.request);
-      } catch (error) {
-        console.error('Background sync failed:', error);
-        await queue.unshiftRequest(entry);
-        throw error;
-      }
-    }
-  },
-});
-
-// Handle offline API requests with background sync
-workbox.routing.registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/') && url.pathname !== '/api/auth/login',
-  async ({ event }) => {
-    try {
-      const response = await fetch(event.request.clone());
-      return response;
-    } catch (error) {
-      // Add to background sync queue if offline (except for login requests)
-      if (event.request.method === 'POST' || event.request.method === 'PUT' || event.request.method === 'DELETE') {
-        await bgSyncQueue.pushRequest({ request: event.request });
-      }
-      
-      // Return cached response if available
-      const cache = await caches.open('api-cache');
-      const cachedResponse = await cache.match(event.request);
-      
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      
-      // Return offline fallback
-      return new Response(
-        JSON.stringify({ 
-          error: 'Offline', 
-          message: 'Request queued for sync when online' 
-        }),
-        {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
-  }
-);
-
-// Handle install event
+// Install event - cache resources
 self.addEventListener('install', (event) => {
   console.log('Service Worker installing');
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
+      .catch((error) => {
+        console.log('Cache failed:', error);
+      })
+  );
   self.skipWaiting();
 });
 
-// Handle activate event
+// Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
   console.log('Service Worker activating');
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME && cacheName !== API_CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
   event.waitUntil(self.clients.claim());
+});
+
+// Fetch event - serve from cache, fallback to network
+self.addEventListener('fetch', (event) => {
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Handle API requests
+  if (event.request.url.includes('/api/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Clone the response
+          const responseToCache = response.clone();
+          
+          // Cache successful responses
+          if (response.status === 200) {
+            caches.open(API_CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+          }
+          
+          return response;
+        })
+        .catch(() => {
+          // Return cached response if available
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // Handle static assets
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        // Return cached version or fetch from network
+        return response || fetch(event.request);
+      })
+      .catch(() => {
+        // Fallback for navigation requests
+        if (event.request.mode === 'navigate') {
+          return caches.match('/');
+        }
+      })
+  );
 });
 
 // Handle push notifications (for future use)

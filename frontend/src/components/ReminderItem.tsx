@@ -113,15 +113,15 @@ const ReminderItem: React.FC<ReminderItemProps> = ({
       <Card
         sx={{
           mb: 2,
-          opacity: reminder.completed ? 0.7 : 1,
-          backgroundColor: reminder.completed ? 'grey.50' : 'background.paper',
-          borderLeft: reminder.completed ? '4px solid' : '4px solid transparent',
-          borderLeftColor: reminder.completed ? 'success.main' : 'transparent',
+          opacity: reminder.isCompleted ? 0.7 : 1,
+          backgroundColor: reminder.isCompleted ? 'grey.50' : 'background.paper',
+          borderLeft: reminder.isCompleted ? '4px solid' : '4px solid transparent',
+          borderLeftColor: reminder.isCompleted ? 'success.main' : 'transparent',
           transition: 'all 0.3s ease-in-out',
-          transform: reminder.completed ? 'scale(0.98)' : 'scale(1)',
+          transform: reminder.isCompleted ? 'scale(0.98)' : 'scale(1)',
           '&:hover': {
-            boxShadow: reminder.completed ? theme.shadows[2] : theme.shadows[4],
-            transform: reminder.completed ? 'scale(0.99)' : 'scale(1.01)',
+            boxShadow: reminder.isCompleted ? theme.shadows[2] : theme.shadows[4],
+            transform: reminder.isCompleted ? 'scale(0.99)' : 'scale(1.01)',
           },
         }}
       >
@@ -130,7 +130,7 @@ const ReminderItem: React.FC<ReminderItemProps> = ({
             {/* Completion Checkbox */}
             <Box position="relative" display="inline-flex">
               <Checkbox
-                checked={reminder.completed}
+                checked={reminder.isCompleted}
                 onChange={handleToggleComplete}
                 color="primary"
                 disabled={isToggling}
@@ -156,13 +156,13 @@ const ReminderItem: React.FC<ReminderItemProps> = ({
               <Typography
                 variant={isMobile ? 'body1' : 'h6'}
                 sx={{
-                  textDecoration: reminder.completed ? 'line-through' : 'none',
-                  color: reminder.completed ? 'text.secondary' : 'text.primary',
+                  textDecoration: reminder.isCompleted ? 'line-through' : 'none',
+                  color: reminder.isCompleted ? 'text.secondary' : 'text.primary',
                   wordBreak: 'break-word',
                   mb: 1,
                   transition: 'all 0.3s ease-in-out',
                   position: 'relative',
-                  '&::after': reminder.completed ? {
+                  '&::after': reminder.isCompleted ? {
                     content: '""',
                     position: 'absolute',
                     top: '50%',
@@ -176,7 +176,7 @@ const ReminderItem: React.FC<ReminderItemProps> = ({
                   } : {},
                 }}
               >
-                {reminder.text}
+                {reminder.title}
               </Typography>
 
               {/* Date and Time Info */}
@@ -190,27 +190,16 @@ const ReminderItem: React.FC<ReminderItemProps> = ({
                 <Box display="flex" alignItems="center" gap={0.5}>
                   <CalendarIcon fontSize="small" color="action" />
                   <Typography variant="body2" color="text.secondary">
-                    {formatDate(reminder.reminderDate)}
+                    {formatDate(reminder.dueDate)}
                   </Typography>
                 </Box>
 
-                {!reminder.isAllDay && reminder.reminderTime && (
-                  <Box display="flex" alignItems="center" gap={0.5}>
-                    <ScheduleIcon fontSize="small" color="action" />
-                    <Typography variant="body2" color="text.secondary">
-                      {formatTime(reminder.reminderTime)}
-                    </Typography>
-                  </Box>
-                )}
-
-                {reminder.isAllDay && (
-                  <Chip
-                    label="All Day"
-                    size="small"
-                    variant="outlined"
-                    color="info"
-                  />
-                )}
+                <Box display="flex" alignItems="center" gap={0.5}>
+                  <ScheduleIcon fontSize="small" color="action" />
+                  <Typography variant="body2" color="text.secondary">
+                    {formatTime(reminder.dueDate)}
+                  </Typography>
+                </Box>
               </Box>
 
               {/* Priority and Actions */}
@@ -229,12 +218,12 @@ const ReminderItem: React.FC<ReminderItemProps> = ({
                     color={getPriorityColor(reminder.priority)}
                     variant="outlined"
                     sx={{
-                      opacity: reminder.completed ? 0.6 : 1,
+                      opacity: reminder.isCompleted ? 0.6 : 1,
                       transition: 'opacity 0.3s ease-in-out',
                     }}
                   />
                   
-                  {reminder.completed && (
+                  {reminder.isCompleted && (
                     <Chip
                       label="Completed"
                       size="small"
@@ -258,7 +247,7 @@ const ReminderItem: React.FC<ReminderItemProps> = ({
                   color="error"
                   size="small"
                   sx={{
-                    opacity: reminder.completed ? 0.7 : 1,
+                    opacity: reminder.isCompleted ? 0.7 : 1,
                     transition: 'all 0.3s ease-in-out',
                     '&:hover': {
                       backgroundColor: 'error.light',
@@ -289,7 +278,7 @@ const ReminderItem: React.FC<ReminderItemProps> = ({
           </Typography>
           <Box mt={2} p={2} bgcolor="grey.100" borderRadius={1}>
             <Typography variant="body2" color="text.secondary">
-              "{reminder.text}"
+              "{reminder.title}"
             </Typography>
           </Box>
         </DialogContent>

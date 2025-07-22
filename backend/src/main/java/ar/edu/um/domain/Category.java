@@ -7,11 +7,12 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
- * The Category entity for grouping reminders.
+ * A Category.
  */
 @Entity
 @Table(name = "category")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "category")
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Category implements Serializable {
 
@@ -24,9 +25,20 @@ public class Category implements Serializable {
     private Long id;
 
     @NotNull
-    @Size(min = 2)
-    @Column(name = "name", nullable = false, unique = true)
+    @Size(max = 100)
+    @Column(name = "name", length = 100, nullable = false)
+    @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Text)
     private String name;
+
+    @Size(max = 7)
+    @Column(name = "color", length = 7)
+    @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Text)
+    private String color;
+
+    @Lob
+    @Column(name = "description")
+    @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Text)
+    private String description;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -56,6 +68,32 @@ public class Category implements Serializable {
         this.name = name;
     }
 
+    public String getColor() {
+        return this.color;
+    }
+
+    public Category color(String color) {
+        this.setColor(color);
+        return this;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
+    public Category description(String description) {
+        this.setDescription(description);
+        return this;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -81,6 +119,8 @@ public class Category implements Serializable {
         return "Category{" +
             "id=" + getId() +
             ", name='" + getName() + "'" +
+            ", color='" + getColor() + "'" +
+            ", description='" + getDescription() + "'" +
             "}";
     }
 }

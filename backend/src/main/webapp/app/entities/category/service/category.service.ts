@@ -1,10 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, asapScheduler, scheduled } from 'rxjs';
+
+import { catchError } from 'rxjs/operators';
 
 import { isPresent } from 'app/core/util/operators';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
+import { SearchWithPagination } from 'app/core/request/request.model';
 import { ICategory, NewCategory } from '../category.model';
 
 export type PartialUpdateCategory = Partial<ICategory> & Pick<ICategory, 'id'>;
@@ -18,6 +21,7 @@ export class CategoryService {
   protected readonly applicationConfigService = inject(ApplicationConfigService);
 
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/categories');
+  protected resourceSearchUrl = this.applicationConfigService.getEndpointFor('api/categories/_search');
 
   create(category: NewCategory): Observable<EntityResponseType> {
     return this.http.post<ICategory>(this.resourceUrl, category, { observe: 'response' });
@@ -42,6 +46,13 @@ export class CategoryService {
 
   delete(id: number): Observable<HttpResponse<{}>> {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
+  }
+
+  search(req: SearchWithPagination): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+    return this.http
+      .get<ICategory[]>(this.resourceSearchUrl, { params: options, observe: 'response' })
+      .pipe(catchError(() => scheduled([new HttpResponse<ICategory[]>()], asapScheduler)));
   }
 
   getCategoryIdentifier(category: Pick<ICategory, 'id'>): number {

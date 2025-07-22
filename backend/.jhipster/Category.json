@@ -1,20 +1,30 @@
 {
   "annotations": {
-    "changelogDate": "20250722004132"
+    "changelogDate": "20250722132924"
   },
   "applications": "*",
-  "documentation": "The Category entity for grouping reminders.",
   "dto": "mapstruct",
   "fields": [
     {
       "fieldName": "name",
       "fieldType": "String",
-      "fieldValidateRules": ["required", "unique", "minlength"],
-      "fieldValidateRulesMinlength": "2"
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "color",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "7"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "TextBlob"
     }
   ],
+  "jpaMetamodelFiltering": true,
   "name": "Category",
+  "pagination": "pagination",
   "relationships": [],
-  "searchEngine": "no",
-  "service": "serviceClass"
+  "service": "serviceImpl"
 }

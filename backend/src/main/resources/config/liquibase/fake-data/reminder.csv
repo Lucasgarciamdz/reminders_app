@@ -1,11 +1,11 @@
-id;title;description;due_date;completed
-1;abaft maintainer past;closely reel;2025-07-21T18:38:38;true
-2;whose weird accessorise;plus madly oxidise;2025-07-21T10:50:49;false
-3;shrilly commemorate doubtfully;wherever climb;2025-07-21T11:03:27;false
-4;border unfinished;moor pfft badly;2025-07-21T02:16:10;false
-5;finally positively scale;whose who incidentally;2025-07-21T01:08:30;false
-6;for accompany;an multicolored reproach;2025-07-21T07:04:36;true
-7;unexpectedly what behind;recede famously supportive;2025-07-21T03:26:04;true
-8;gee blue;pant;2025-07-21T14:02:16;true
-9;inveigle boohoo under;ah pushy;2025-07-21T09:44:04;false
-10;oxidise;absentmindedly while;2025-07-21T09:58:24;true
+id;title;description;due_date;is_completed;priority;created_date;last_modified_date
+1;abaft maintainer past;../fake-data/blob/hipster.txt;2025-07-21T23:34:22;false;LOW;2025-07-22T10:12:21;2025-07-22T07:20:18
+2;gosh;../fake-data/blob/hipster.txt;2025-07-22T00:59:47;false;HIGH;2025-07-21T16:28:01;2025-07-22T05:36:30
+3;from cool oof;../fake-data/blob/hipster.txt;2025-07-22T11:16:00;true;URGENT;2025-07-22T10:59:56;2025-07-22T08:30:09
+4;hungrily apud oblong;../fake-data/blob/hipster.txt;2025-07-22T08:18:08;false;LOW;2025-07-22T07:05:51;2025-07-22T04:17:37
+5;woefully;../fake-data/blob/hipster.txt;2025-07-22T04:45:57;false;LOW;2025-07-21T21:56:51;2025-07-21T17:47:10
+6;wherever climb;../fake-data/blob/hipster.txt;2025-07-21T23:51:19;false;HIGH;2025-07-22T08:07:12;2025-07-21T23:49:17
+7;ick;../fake-data/blob/hipster.txt;2025-07-21T22:43:14;false;URGENT;2025-07-22T10:42:48;2025-07-22T11:14:55
+8;vivacious;../fake-data/blob/hipster.txt;2025-07-22T11:30:01;true;LOW;2025-07-22T07:26:05;2025-07-22T04:17:05
+9;badly;../fake-data/blob/hipster.txt;2025-07-21T15:04:02;false;HIGH;2025-07-22T09:23:43;2025-07-22T12:30:53
+10;cautiously deduct pink;../fake-data/blob/hipster.txt;2025-07-22T07:07:08;true;LOW;2025-07-22T04:24:34;2025-07-22T12:12:20

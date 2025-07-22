@@ -31,6 +31,8 @@
     "cleanup": "rimraf target/",
     "docker:db:down": "docker compose -f src/main/docker/postgresql.yml down -v",
     "docker:db:up": "docker compose -f src/main/docker/postgresql.yml up --wait",
+    "docker:elasticsearch:down": "docker compose -f src/main/docker/elasticsearch.yml down -v",
+    "docker:elasticsearch:up": "docker compose -f src/main/docker/elasticsearch.yml up --wait",
     "java:docker": "./mvnw -ntp verify -DskipTests -Pprod jib:dockerBuild",
     "java:docker:arm64": "npm run java:docker -- -Djib-maven-plugin.architecture=arm64",
     "java:docker:dev": "npm run java:docker -- -Pdev,webapp",

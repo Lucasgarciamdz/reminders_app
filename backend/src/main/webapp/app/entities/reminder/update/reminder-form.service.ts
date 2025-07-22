@@ -19,24 +19,30 @@ type ReminderFormGroupInput = IReminder | PartialWithRequiredKeyOf<NewReminder>;
 /**
  * Type that converts some properties for forms.
  */
-type FormValueOf<T extends IReminder | NewReminder> = Omit<T, 'dueDate'> & {
+type FormValueOf<T extends IReminder | NewReminder> = Omit<T, 'dueDate' | 'createdDate' | 'lastModifiedDate'> & {
   dueDate?: string | null;
+  createdDate?: string | null;
+  lastModifiedDate?: string | null;
 };
 
 type ReminderFormRawValue = FormValueOf<IReminder>;
 
 type NewReminderFormRawValue = FormValueOf<NewReminder>;
 
-type ReminderFormDefaults = Pick<NewReminder, 'id' | 'dueDate' | 'completed'>;
+type ReminderFormDefaults = Pick<NewReminder, 'id' | 'dueDate' | 'isCompleted' | 'createdDate' | 'lastModifiedDate' | 'tags'>;
 
 type ReminderFormGroupContent = {
   id: FormControl<ReminderFormRawValue['id'] | NewReminder['id']>;
   title: FormControl<ReminderFormRawValue['title']>;
   description: FormControl<ReminderFormRawValue['description']>;
   dueDate: FormControl<ReminderFormRawValue['dueDate']>;
-  completed: FormControl<ReminderFormRawValue['completed']>;
-  user: FormControl<ReminderFormRawValue['user']>;
+  isCompleted: FormControl<ReminderFormRawValue['isCompleted']>;
+  priority: FormControl<ReminderFormRawValue['priority']>;
+  createdDate: FormControl<ReminderFormRawValue['createdDate']>;
+  lastModifiedDate: FormControl<ReminderFormRawValue['lastModifiedDate']>;
   category: FormControl<ReminderFormRawValue['category']>;
+  user: FormControl<ReminderFormRawValue['user']>;
+  tags: FormControl<ReminderFormRawValue['tags']>;
 };
 
 export type ReminderFormGroup = FormGroup<ReminderFormGroupContent>;
@@ -57,15 +63,25 @@ export class ReminderFormService {
         },
       ),
       title: new FormControl(reminderRawValue.title, {
-        validators: [Validators.required, Validators.minLength(3)],
+        validators: [Validators.required, Validators.maxLength(255)],
       }),
       description: new FormControl(reminderRawValue.description),
-      dueDate: new FormControl(reminderRawValue.dueDate),
-      completed: new FormControl(reminderRawValue.completed, {
+      dueDate: new FormControl(reminderRawValue.dueDate, {
         validators: [Validators.required],
       }),
-      user: new FormControl(reminderRawValue.user),
+      isCompleted: new FormControl(reminderRawValue.isCompleted, {
+        validators: [Validators.required],
+      }),
+      priority: new FormControl(reminderRawValue.priority, {
+        validators: [Validators.required],
+      }),
+      createdDate: new FormControl(reminderRawValue.createdDate, {
+        validators: [Validators.required],
+      }),
+      lastModifiedDate: new FormControl(reminderRawValue.lastModifiedDate),
       category: new FormControl(reminderRawValue.category),
+      user: new FormControl(reminderRawValue.user),
+      tags: new FormControl(reminderRawValue.tags ?? []),
     });
   }
 
@@ -89,7 +105,10 @@ export class ReminderFormService {
     return {
       id: null,
       dueDate: currentTime,
-      completed: false,
+      isCompleted: false,
+      createdDate: currentTime,
+      lastModifiedDate: currentTime,
+      tags: [],
     };
   }
 
@@ -97,6 +116,8 @@ export class ReminderFormService {
     return {
       ...rawReminder,
       dueDate: dayjs(rawReminder.dueDate, DATE_TIME_FORMAT),
+      createdDate: dayjs(rawReminder.createdDate, DATE_TIME_FORMAT),
+      lastModifiedDate: dayjs(rawReminder.lastModifiedDate, DATE_TIME_FORMAT),
     };
   }
 
@@ -106,6 +127,9 @@ export class ReminderFormService {
     return {
       ...reminder,
       dueDate: reminder.dueDate ? reminder.dueDate.format(DATE_TIME_FORMAT) : undefined,
+      createdDate: reminder.createdDate ? reminder.createdDate.format(DATE_TIME_FORMAT) : undefined,
+      lastModifiedDate: reminder.lastModifiedDate ? reminder.lastModifiedDate.format(DATE_TIME_FORMAT) : undefined,
+      tags: reminder.tags ?? [],
     };
   }
 }

@@ -27,20 +27,41 @@
           <dd>
             <span>{{ reminderRef.dueDate | formatMediumDatetime }}</span>
           </dd>
-          <dt><span>Completed</span></dt>
+          <dt><span>Is Completed</span></dt>
           <dd>
-            <span>{{ reminderRef.completed }}</span>
+            <span>{{ reminderRef.isCompleted }}</span>
           </dd>
-          <dt><span>User</span></dt>
+          <dt><span>Priority</span></dt>
           <dd>
-            <span>{{ reminderRef.user?.login }}</span>
+            <span>{{ { null: '', LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH', URGENT: 'URGENT' }[reminderRef.priority ?? 'null'] }}</span>
+          </dd>
+          <dt><span>Created Date</span></dt>
+          <dd>
+            <span>{{ reminderRef.createdDate | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span>Last Modified Date</span></dt>
+          <dd>
+            <span>{{ reminderRef.lastModifiedDate | formatMediumDatetime }}</span>
           </dd>
           <dt><span>Category</span></dt>
           <dd>
             @if (reminder()!.category) {
               <div>
-                <a [routerLink]="['/category', reminder()!.category?.id, 'view']">{{ reminderRef.category?.name }}</a>
+                <a [routerLink]="['/category', reminder()!.category?.id, 'view']">{{ reminderRef.category?.id }}</a>
               </div>
+            }
+          </dd>
+          <dt><span>User</span></dt>
+          <dd>
+            <span>{{ reminderRef.user?.id }}</span>
+          </dd>
+          <dt><span>Tags</span></dt>
+          <dd>
+            @for (tags of reminderRef.tags; track $index; let last = $last) {
+              <span>
+                <a [routerLink]="['/tag', tags.id, 'view']">{{ tags?.id }}</a
+                >{{ last ? '' : ', ' }}
+              </span>
             }
           </dd>
         </dl>

@@ -1,6 +1,7 @@
 package ar.edu.um;
 
 import ar.edu.um.config.AsyncSyncConfiguration;
+import ar.edu.um.config.EmbeddedElasticsearch;
 import ar.edu.um.config.EmbeddedSQL;
 import ar.edu.um.config.JacksonConfiguration;
 import java.lang.annotation.ElementType;
@@ -15,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest(classes = { RemindersApp.class, JacksonConfiguration.class, AsyncSyncConfiguration.class })
+@EmbeddedElasticsearch
 @EmbeddedSQL
 public @interface IntegrationTest {
 }

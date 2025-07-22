@@ -19,6 +19,8 @@ type CategoryFormDefaults = Pick<NewCategory, 'id'>;
 type CategoryFormGroupContent = {
   id: FormControl<ICategory['id'] | NewCategory['id']>;
   name: FormControl<ICategory['name']>;
+  color: FormControl<ICategory['color']>;
+  description: FormControl<ICategory['description']>;
 };
 
 export type CategoryFormGroup = FormGroup<CategoryFormGroupContent>;
@@ -39,8 +41,12 @@ export class CategoryFormService {
         },
       ),
       name: new FormControl(categoryRawValue.name, {
-        validators: [Validators.required, Validators.minLength(2)],
+        validators: [Validators.required, Validators.maxLength(100)],
       }),
+      color: new FormControl(categoryRawValue.color, {
+        validators: [Validators.maxLength(7)],
+      }),
+      description: new FormControl(categoryRawValue.description),
     });
   }
 

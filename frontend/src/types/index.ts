@@ -39,31 +39,43 @@ export enum Priority {
 
 export interface Reminder {
   id: number;
-  text: string;
-  completed: boolean;
-  reminderDate: string; // ISO date string
-  reminderTime?: string; // ISO time string
-  isAllDay: boolean;
+  title: string;
+  description?: string;
+  dueDate: string; // ISO datetime string
+  isCompleted: boolean;
   priority: Priority;
-  createdAt: string;
-  updatedAt?: string;
-  user: {
+  createdDate: string;
+  lastModifiedDate?: string;
+  user?: {
     id: number;
     login: string;
   };
+  category?: {
+    id: number;
+    name: string;
+  };
+  tags?: Array<{
+    id: number;
+    name: string;
+  }>;
 }
 
 export interface CreateReminderRequest {
-  text: string;
-  reminderDate: string;
-  reminderTime?: string;
-  isAllDay: boolean;
+  title: string;
+  description?: string;
+  dueDate: string; // ISO datetime string
+  isCompleted: boolean;
   priority: Priority;
-  completed: boolean;
 }
 
-export interface UpdateReminderRequest extends Partial<CreateReminderRequest> {
+export interface UpdateReminderRequest {
   id: number;
+  title: string;
+  description?: string;
+  dueDate: string; // ISO datetime string
+  isCompleted: boolean;
+  priority: Priority;
+  createdDate: string; // Required by backend
 }
 
 // API Response types

@@ -224,7 +224,7 @@ class ApiService {
     return response;
   }
 
-  public async createReminder(reminder: CreateReminderRequest): Promise<AxiosResponse<Reminder>> {
+  public async createReminder(reminder: CreateReminderRequest & { createdDate: string }): Promise<AxiosResponse<Reminder>> {
     const response = await this.axiosInstance.post<Reminder>('/api/reminders', reminder);
     return response;
   }

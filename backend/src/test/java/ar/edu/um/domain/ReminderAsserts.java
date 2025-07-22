@@ -50,7 +50,10 @@ public class ReminderAsserts {
             .satisfies(a -> assertThat(a.getTitle()).as("check title").isEqualTo(expected.getTitle()))
             .satisfies(a -> assertThat(a.getDescription()).as("check description").isEqualTo(expected.getDescription()))
             .satisfies(a -> assertThat(a.getDueDate()).as("check dueDate").isEqualTo(expected.getDueDate()))
-            .satisfies(a -> assertThat(a.getCompleted()).as("check completed").isEqualTo(expected.getCompleted()));
+            .satisfies(a -> assertThat(a.getIsCompleted()).as("check isCompleted").isEqualTo(expected.getIsCompleted()))
+            .satisfies(a -> assertThat(a.getPriority()).as("check priority").isEqualTo(expected.getPriority()))
+            .satisfies(a -> assertThat(a.getCreatedDate()).as("check createdDate").isEqualTo(expected.getCreatedDate()))
+            .satisfies(a -> assertThat(a.getLastModifiedDate()).as("check lastModifiedDate").isEqualTo(expected.getLastModifiedDate()));
     }
 
     /**
@@ -62,6 +65,7 @@ public class ReminderAsserts {
     public static void assertReminderUpdatableRelationshipsEquals(Reminder expected, Reminder actual) {
         assertThat(actual)
             .as("Verify Reminder relationships")
-            .satisfies(a -> assertThat(a.getCategory()).as("check category").isEqualTo(expected.getCategory()));
+            .satisfies(a -> assertThat(a.getCategory()).as("check category").isEqualTo(expected.getCategory()))
+            .satisfies(a -> assertThat(a.getTags()).as("check tags").isEqualTo(expected.getTags()));
     }
 }

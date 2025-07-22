@@ -10,7 +10,7 @@ class OfflineDatabase extends Dexie {
     super('RemindersOfflineDB');
     
     this.version(1).stores({
-      reminders: '++id, localId, text, completed, reminderDate, priority, syncStatus, lastModified',
+      reminders: '++id, localId, title, isCompleted, dueDate, priority, syncStatus, lastModified',
       syncQueue: '++id, type, reminderId, localId, timestamp, retryCount',
       settings: '&key, value, updatedAt',
     });
@@ -26,7 +26,7 @@ class OfflineStorageService {
 
   // Reminder operations
   async getLocalReminders(): Promise<LocalReminder[]> {
-    return await this.db.reminders.orderBy('reminderDate').toArray();
+    return await this.db.reminders.orderBy('dueDate').toArray();
   }
 
   async saveLocalReminder(reminder: LocalReminder): Promise<void> {
@@ -153,14 +153,14 @@ class OfflineStorageService {
     const lowerQuery = query.toLowerCase();
     return await this.db.reminders
       .filter(reminder => 
-        reminder.text.toLowerCase().includes(lowerQuery)
+        reminder.title.toLowerCase().includes(lowerQuery)
       )
       .toArray();
   }
 
   async getRemindersByDateRange(startDate: string, endDate: string): Promise<LocalReminder[]> {
     return await this.db.reminders
-      .where('reminderDate')
+      .where('dueDate')
       .between(startDate, endDate, true, true)
       .toArray();
   }
@@ -174,14 +174,14 @@ class OfflineStorageService {
 
   async getCompletedReminders(): Promise<LocalReminder[]> {
     return await this.db.reminders
-      .where('completed')
+      .where('isCompleted')
       .equals(1)
       .toArray();
   }
 
   async getIncompleteReminders(): Promise<LocalReminder[]> {
     return await this.db.reminders
-      .where('completed')
+      .where('isCompleted')
       .equals(0)
       .toArray();
   }

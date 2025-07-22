@@ -15,7 +15,7 @@
         [routerLink]="['/category/new']"
       >
         <fa-icon icon="plus"></fa-icon>
-        <span>Create a new Category</span>
+        <span class="hidden-sm-down">Create a new Category</span>
       </button>
     </div>
   </h2>
@@ -23,6 +23,34 @@
   <jhi-alert-error />
 
   <jhi-alert />
+
+  <form name="searchForm" class="row row-cols-sm-auto align-items-center">
+    <div class="col-sm-12">
+      <div class="input-group w-100 mt-3">
+        <label class="visually-hidden" for="currentSearch">Search for Category</label>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="currentSearch"
+          id="currentSearch"
+          name="currentSearch"
+          placeholder="Search for Category"
+        />
+
+        <button class="btn btn-info" (click)="search(currentSearch)">
+          <fa-icon icon="search"></fa-icon>
+        </button>
+
+        @if (currentSearch) {
+          <button class="btn btn-danger" (click)="search('')">
+            <fa-icon icon="trash-alt"></fa-icon>
+          </button>
+        }
+      </div>
+    </div>
+  </form>
+
+  <jhi-filter [filters]="filters" />
 
   @if (categories().length === 0) {
     <div class="alert alert-warning" id="no-result">
@@ -43,8 +71,25 @@
             <th scope="col" jhiSortBy="name">
               <div class="d-flex">
                 <span>Name</span>
-
-                <fa-icon class="p-1" icon="sort"></fa-icon>
+                @if (!currentSearch) {
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                }
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="color">
+              <div class="d-flex">
+                <span>Color</span>
+                @if (!currentSearch) {
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                }
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="description">
+              <div class="d-flex">
+                <span>Description</span>
+                @if (!currentSearch) {
+                  <fa-icon class="p-1" icon="sort"></fa-icon>
+                }
               </div>
             </th>
             <th scope="col"></th>
@@ -57,6 +102,8 @@
                 <a [routerLink]="['/category', category.id, 'view']">{{ category.id }}</a>
               </td>
               <td>{{ category.name }}</td>
+              <td>{{ category.color }}</td>
+              <td>{{ category.description }}</td>
               <td class="text-end">
                 <div class="btn-group">
                   <a [routerLink]="['/category', category.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
@@ -79,6 +126,25 @@
           }
         </tbody>
       </table>
+    </div>
+  }
+  @if (categories().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page, totalItems, itemsPerPage }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems"
+          [page]="page"
+          [pageSize]="itemsPerPage"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        ></ngb-pagination>
+      </div>
     </div>
   }
 </div>

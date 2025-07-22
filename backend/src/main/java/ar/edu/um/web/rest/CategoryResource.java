@@ -1,9 +1,12 @@
 package ar.edu.um.web.rest;
 
 import ar.edu.um.repository.CategoryRepository;
+import ar.edu.um.service.CategoryQueryService;
 import ar.edu.um.service.CategoryService;
+import ar.edu.um.service.criteria.CategoryCriteria;
 import ar.edu.um.service.dto.CategoryDTO;
 import ar.edu.um.web.rest.errors.BadRequestAlertException;
+import ar.edu.um.web.rest.errors.ElasticsearchExceptionMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -14,9 +17,14 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
+import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
 /**
@@ -37,9 +45,16 @@ public class CategoryResource {
 
     private final CategoryRepository categoryRepository;
 
-    public CategoryResource(CategoryService categoryService, CategoryRepository categoryRepository) {
+    private final CategoryQueryService categoryQueryService;
+
+    public CategoryResource(
+        CategoryService categoryService,
+        CategoryRepository categoryRepository,
+        CategoryQueryService categoryQueryService
+    ) {
         this.categoryService = categoryService;
         this.categoryRepository = categoryRepository;
+        this.categoryQueryService = categoryQueryService;
     }
 
     /**
@@ -133,12 +148,32 @@ public class CategoryResource {
     /**
      * {@code GET  /categories} : get all the categories.
      *
+     * @param pageable the pagination information.
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of categories in body.
      */
     @GetMapping("")
-    public List<CategoryDTO> getAllCategories() {
-        LOG.debug("REST request to get all Categories");
-        return categoryService.findAll();
+    public ResponseEntity<List<CategoryDTO>> getAllCategories(
+        CategoryCriteria criteria,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        LOG.debug("REST request to get Categories by criteria: {}", criteria);
+
+        Page<CategoryDTO> page = categoryQueryService.findByCriteria(criteria, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /categories/count} : count all the categories.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countCategories(CategoryCriteria criteria) {
+        LOG.debug("REST request to count Categories by criteria: {}", criteria);
+        return ResponseEntity.ok().body(categoryQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -167,5 +202,28 @@ public class CategoryResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    /**
+     * {@code SEARCH  /categories/_search?query=:query} : search for the category corresponding
+     * to the query.
+     *
+     * @param query the query of the category search.
+     * @param pageable the pagination information.
+     * @return the result of the search.
+     */
+    @GetMapping("/_search")
+    public ResponseEntity<List<CategoryDTO>> searchCategories(
+        @RequestParam("query") String query,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        LOG.debug("REST request to search for a page of Categories for query {}", query);
+        try {
+            Page<CategoryDTO> page = categoryService.search(query, pageable);
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        } catch (RuntimeException e) {
+            throw ElasticsearchExceptionMapper.mapException(e);
+        }
     }
 }

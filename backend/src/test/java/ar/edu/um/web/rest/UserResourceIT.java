@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import ar.edu.um.IntegrationTest;
 import ar.edu.um.domain.User;
 import ar.edu.um.repository.UserRepository;
+import ar.edu.um.repository.search.UserSearchRepository;
 import ar.edu.um.security.AuthoritiesConstants;
 import ar.edu.um.service.UserService;
 import ar.edu.um.service.dto.AdminUserDTO;
@@ -65,6 +66,9 @@ class UserResourceIT {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserSearchRepository userSearchRepository;
 
     @Autowired
     private UserMapper userMapper;
@@ -201,6 +205,7 @@ class UserResourceIT {
     void createUserWithExistingLogin() throws Exception {
         // Initialize the database
         userRepository.saveAndFlush(user);
+        userSearchRepository.save(user);
         int databaseSizeBeforeCreate = userRepository.findAll().size();
 
         AdminUserDTO userDTO = new AdminUserDTO();
@@ -227,6 +232,7 @@ class UserResourceIT {
     void createUserWithExistingEmail() throws Exception {
         // Initialize the database
         userRepository.saveAndFlush(user);
+        userSearchRepository.save(user);
         int databaseSizeBeforeCreate = userRepository.findAll().size();
 
         AdminUserDTO userDTO = new AdminUserDTO();
@@ -272,6 +278,8 @@ class UserResourceIT {
     void getUser() throws Exception {
         // Initialize the database
         userRepository.saveAndFlush(user);
+
+        userSearchRepository.save(user);
 
         assertThat(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).get(user.getLogin(), User.class)).isNull();
 
@@ -384,6 +392,7 @@ class UserResourceIT {
     void updateUserExistingEmail() throws Exception {
         // Initialize the database with 2 users
         userRepository.saveAndFlush(user);
+        userSearchRepository.save(user);
 
         User anotherUser = new User();
         anotherUser.setLogin("jhipster");
@@ -395,6 +404,7 @@ class UserResourceIT {
         anotherUser.setImageUrl("");
         anotherUser.setLangKey("en");
         userRepository.saveAndFlush(anotherUser);
+        userSearchRepository.save(anotherUser);
 
         // Update the user
         User updatedUser = userRepository.findById(user.getId()).orElseThrow();
@@ -424,6 +434,7 @@ class UserResourceIT {
     void updateUserExistingLogin() throws Exception {
         // Initialize the database
         userRepository.saveAndFlush(user);
+        userSearchRepository.save(user);
 
         User anotherUser = new User();
         anotherUser.setLogin("jhipster");
@@ -435,6 +446,7 @@ class UserResourceIT {
         anotherUser.setImageUrl("");
         anotherUser.setLangKey("en");
         userRepository.saveAndFlush(anotherUser);
+        userSearchRepository.save(anotherUser);
 
         // Update the user
         User updatedUser = userRepository.findById(user.getId()).orElseThrow();

@@ -47,7 +47,9 @@ public class CategoryAsserts {
     public static void assertCategoryUpdatableFieldsEquals(Category expected, Category actual) {
         assertThat(actual)
             .as("Verify Category relevant properties")
-            .satisfies(a -> assertThat(a.getName()).as("check name").isEqualTo(expected.getName()));
+            .satisfies(a -> assertThat(a.getName()).as("check name").isEqualTo(expected.getName()))
+            .satisfies(a -> assertThat(a.getColor()).as("check color").isEqualTo(expected.getColor()))
+            .satisfies(a -> assertThat(a.getDescription()).as("check description").isEqualTo(expected.getDescription()));
     }
 
     /**

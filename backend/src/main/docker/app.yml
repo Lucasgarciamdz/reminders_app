@@ -9,6 +9,7 @@ services:
       - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/reminders
       - SPRING_LIQUIBASE_URL=jdbc:postgresql://postgresql:5432/reminders
+      - SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
     ports:
       - 127.0.0.1:8080:8080
     healthcheck:
@@ -23,7 +24,13 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
   postgresql:
     extends:
       file: ./postgresql.yml
       service: postgresql
+  elasticsearch:
+    extends:
+      file: ./elasticsearch.yml
+      service: elasticsearch

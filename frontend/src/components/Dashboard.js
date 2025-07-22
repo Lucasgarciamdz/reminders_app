@@ -33,11 +33,13 @@ import {
   toggleReminderCompletion,
   deleteReminder,
   selectFilteredReminders,
+  selectReminders,
   selectRemindersLoading,
   selectRemindersError,
   selectRemindersFilters,
   setFilters,
   clearError,
+  debugClearAllFilters,
 } from '../store/slices/remindersSlice';
 import { showAddReminderForm } from '../store/slices/uiSlice';
 
@@ -50,9 +52,15 @@ const Dashboard = () => {
 
   // Redux state
   const reminders = useSelector(selectFilteredReminders);
+  const allReminders = useSelector(selectReminders); // Debug: get all reminders without filters
   const loading = useSelector(selectRemindersLoading);
   const error = useSelector(selectRemindersError);
   const filters = useSelector(selectRemindersFilters);
+
+  // Debug logging
+  console.log('Dashboard: allReminders count:', allReminders?.length);
+  console.log('Dashboard: filtered reminders count:', reminders?.length);
+  console.log('Dashboard: active filters:', filters);
 
   // Local state
   const [anchorEl, setAnchorEl] = useState(null);
@@ -118,6 +126,12 @@ const Dashboard = () => {
     dispatch(setFilters(newFilters));
   };
 
+  // Debug function to clear all filters
+  const handleDebugClearFilters = () => {
+    console.log('DEBUG: Clearing all filters...');
+    dispatch(debugClearAllFilters());
+  };
+
   return (
     <Box sx={{ flexGrow: 1, minHeight: '100vh', backgroundColor: 'grey.50' }}>
       {/* App Bar */}
@@ -147,6 +161,16 @@ const Dashboard = () => {
               <Typography variant="body2">Offline</Typography>
             </Box>
           )}
+
+          {/* Debug Button - Temporary */}
+          <Button
+            color="inherit"
+            onClick={handleDebugClearFilters}
+            size="small"
+            sx={{ mr: 1, fontSize: '0.75rem' }}
+          >
+            Clear Filters
+          </Button>
 
           {/* Refresh Button */}
           <IconButton

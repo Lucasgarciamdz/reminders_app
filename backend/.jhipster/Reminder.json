@@ -1,36 +1,57 @@
 {
   "annotations": {
-    "changelogDate": "20250722004131"
+    "changelogDate": "20250722132923"
   },
   "applications": "*",
-  "documentation": "The Reminder entity.",
   "dto": "mapstruct",
   "fields": [
     {
       "fieldName": "title",
       "fieldType": "String",
-      "fieldValidateRules": ["required", "minlength"],
-      "fieldValidateRulesMinlength": "3"
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "255"
     },
     {
       "fieldName": "description",
-      "fieldType": "String"
+      "fieldType": "TextBlob"
     },
     {
       "fieldName": "dueDate",
-      "fieldType": "Instant"
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
     },
     {
-      "fieldName": "completed",
+      "fieldName": "isCompleted",
       "fieldType": "Boolean",
       "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "priority",
+      "fieldType": "Priority",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "LOW,MEDIUM,HIGH,URGENT"
+    },
+    {
+      "fieldName": "createdDate",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "lastModifiedDate",
+      "fieldType": "Instant"
     }
   ],
+  "jpaMetamodelFiltering": true,
   "name": "Reminder",
   "pagination": "pagination",
   "relationships": [
     {
-      "otherEntityField": "login",
+      "otherEntityName": "category",
+      "relationshipName": "category",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
       "otherEntityName": "user",
       "relationshipName": "user",
       "relationshipSide": "left",
@@ -38,13 +59,12 @@
       "relationshipWithBuiltInEntity": true
     },
     {
-      "otherEntityField": "name",
-      "otherEntityName": "category",
-      "relationshipName": "category",
+      "otherEntityName": "tag",
+      "otherEntityRelationshipName": "reminders",
+      "relationshipName": "tags",
       "relationshipSide": "left",
-      "relationshipType": "many-to-one"
+      "relationshipType": "many-to-many"
     }
   ],
-  "searchEngine": "no",
-  "service": "serviceClass"
+  "service": "serviceImpl"
 }

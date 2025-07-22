@@ -1,9 +1,12 @@
 package ar.edu.um.web.rest;
 
 import ar.edu.um.repository.ReminderRepository;
+import ar.edu.um.service.ReminderQueryService;
 import ar.edu.um.service.ReminderService;
+import ar.edu.um.service.criteria.ReminderCriteria;
 import ar.edu.um.service.dto.ReminderDTO;
 import ar.edu.um.web.rest.errors.BadRequestAlertException;
+import ar.edu.um.web.rest.errors.ElasticsearchExceptionMapper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -42,9 +45,16 @@ public class ReminderResource {
 
     private final ReminderRepository reminderRepository;
 
-    public ReminderResource(ReminderService reminderService, ReminderRepository reminderRepository) {
+    private final ReminderQueryService reminderQueryService;
+
+    public ReminderResource(
+        ReminderService reminderService,
+        ReminderRepository reminderRepository,
+        ReminderQueryService reminderQueryService
+    ) {
         this.reminderService = reminderService;
         this.reminderRepository = reminderRepository;
+        this.reminderQueryService = reminderQueryService;
     }
 
     /**
@@ -139,23 +149,31 @@ public class ReminderResource {
      * {@code GET  /reminders} : get all the reminders.
      *
      * @param pageable the pagination information.
-     * @param eagerload flag to eager load entities from relationships (This is applicable for many-to-many).
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of reminders in body.
      */
     @GetMapping("")
     public ResponseEntity<List<ReminderDTO>> getAllReminders(
-        @org.springdoc.core.annotations.ParameterObject Pageable pageable,
-        @RequestParam(name = "eagerload", required = false, defaultValue = "true") boolean eagerload
+        ReminderCriteria criteria,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
-        LOG.debug("REST request to get a page of Reminders");
-        Page<ReminderDTO> page;
-        if (eagerload) {
-            page = reminderService.findAllWithEagerRelationships(pageable);
-        } else {
-            page = reminderService.findAll(pageable);
-        }
+        LOG.debug("REST request to get Reminders by criteria: {}", criteria);
+
+        Page<ReminderDTO> page = reminderQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /reminders/count} : count all the reminders.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<Long> countReminders(ReminderCriteria criteria) {
+        LOG.debug("REST request to count Reminders by criteria: {}", criteria);
+        return ResponseEntity.ok().body(reminderQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -184,5 +202,28 @@ public class ReminderResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    /**
+     * {@code SEARCH  /reminders/_search?query=:query} : search for the reminder corresponding
+     * to the query.
+     *
+     * @param query the query of the reminder search.
+     * @param pageable the pagination information.
+     * @return the result of the search.
+     */
+    @GetMapping("/_search")
+    public ResponseEntity<List<ReminderDTO>> searchReminders(
+        @RequestParam("query") String query,
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable
+    ) {
+        LOG.debug("REST request to search for a page of Reminders for query {}", query);
+        try {
+            Page<ReminderDTO> page = reminderService.search(query, pageable);
+            HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        } catch (RuntimeException e) {
+            throw ElasticsearchExceptionMapper.mapException(e);
+        }
     }
 }

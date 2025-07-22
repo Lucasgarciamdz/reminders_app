@@ -174,7 +174,7 @@ const ReminderList: React.FC<ReminderListProps> = ({
               >
                 <Box textAlign="center">
                   <Typography variant="h6" color="success.main" fontWeight="bold">
-                    {reminders.filter(r => r.completed).length}
+                    {reminders.filter(r => r.isCompleted).length}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Completed
@@ -182,7 +182,7 @@ const ReminderList: React.FC<ReminderListProps> = ({
                 </Box>
                 <Box textAlign="center">
                   <Typography variant="h6" color="warning.main" fontWeight="bold">
-                    {reminders.filter(r => !r.completed).length}
+                    {reminders.filter(r => !r.isCompleted).length}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Pending
@@ -190,7 +190,7 @@ const ReminderList: React.FC<ReminderListProps> = ({
                 </Box>
                 <Box textAlign="center">
                   <Typography variant="h6" color="error.main" fontWeight="bold">
-                    {reminders.filter(r => r.priority === 'HIGH' && !r.completed).length}
+                    {reminders.filter(r => r.priority === 'HIGH' && !r.isCompleted).length}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     High Priority

@@ -1,0 +1,26 @@
+{
+  "annotations": {
+    "changelogDate": "20250722132925"
+  },
+  "applications": "*",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "name",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    }
+  ],
+  "name": "Tag",
+  "relationships": [
+    {
+      "otherEntityName": "reminder",
+      "otherEntityRelationshipName": "tags",
+      "relationshipName": "reminders",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-many"
+    }
+  ],
+  "service": "serviceImpl"
+}

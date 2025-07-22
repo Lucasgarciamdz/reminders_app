@@ -2,10 +2,14 @@ package ar.edu.um.service.mapper;
 
 import ar.edu.um.domain.Category;
 import ar.edu.um.domain.Reminder;
+import ar.edu.um.domain.Tag;
 import ar.edu.um.domain.User;
 import ar.edu.um.service.dto.CategoryDTO;
 import ar.edu.um.service.dto.ReminderDTO;
+import ar.edu.um.service.dto.TagDTO;
 import ar.edu.um.service.dto.UserDTO;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.mapstruct.*;
 
 /**
@@ -13,19 +17,31 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface ReminderMapper extends EntityMapper<ReminderDTO, Reminder> {
-    @Mapping(target = "user", source = "user", qualifiedByName = "userLogin")
-    @Mapping(target = "category", source = "category", qualifiedByName = "categoryName")
+    @Mapping(target = "category", source = "category", qualifiedByName = "categoryId")
+    @Mapping(target = "user", source = "user", qualifiedByName = "userId")
+    @Mapping(target = "tags", source = "tags", qualifiedByName = "tagIdSet")
     ReminderDTO toDto(Reminder s);
 
-    @Named("userLogin")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "login", source = "login")
-    UserDTO toDtoUserLogin(User user);
+    @Mapping(target = "removeTags", ignore = true)
+    Reminder toEntity(ReminderDTO reminderDTO);
 
-    @Named("categoryName")
+    @Named("categoryId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
-    @Mapping(target = "name", source = "name")
-    CategoryDTO toDtoCategoryName(Category category);
+    CategoryDTO toDtoCategoryId(Category category);
+
+    @Named("userId")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "id", source = "id")
+    UserDTO toDtoUserId(User user);
+
+    @Named("tagId")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "id", source = "id")
+    TagDTO toDtoTagId(Tag tag);
+
+    @Named("tagIdSet")
+    default Set<TagDTO> toDtoTagIdSet(Set<Tag> tag) {
+        return tag.stream().map(this::toDtoTagId).collect(Collectors.toSet());
+    }
 }

@@ -1,18 +1,23 @@
 package ar.edu.um.domain;
 
+import ar.edu.um.domain.enumeration.Priority;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
- * The Reminder entity.
+ * A Reminder.
  */
 @Entity
 @Table(name = "reminder")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@org.springframework.data.elasticsearch.annotations.Document(indexName = "reminder")
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Reminder implements Serializable {
 
@@ -25,25 +30,53 @@ public class Reminder implements Serializable {
     private Long id;
 
     @NotNull
-    @Size(min = 3)
-    @Column(name = "title", nullable = false)
+    @Size(max = 255)
+    @Column(name = "title", length = 255, nullable = false)
+    @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Text)
     private String title;
 
+    @Lob
     @Column(name = "description")
+    @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Text)
     private String description;
 
-    @Column(name = "due_date")
+    @NotNull
+    @Column(name = "due_date", nullable = false)
     private Instant dueDate;
 
     @NotNull
-    @Column(name = "completed", nullable = false)
-    private Boolean completed;
+    @Column(name = "is_completed", nullable = false)
+    @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Boolean)
+    private Boolean isCompleted;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "priority", nullable = false)
+    @org.springframework.data.elasticsearch.annotations.Field(type = org.springframework.data.elasticsearch.annotations.FieldType.Keyword)
+    private Priority priority;
+
+    @NotNull
+    @Column(name = "created_date", nullable = false)
+    private Instant createdDate;
+
+    @Column(name = "last_modified_date")
+    private Instant lastModifiedDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Category category;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "rel_reminder__tags",
+        joinColumns = @JoinColumn(name = "reminder_id"),
+        inverseJoinColumns = @JoinColumn(name = "tags_id")
+    )
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JsonIgnoreProperties(value = { "reminders" }, allowSetters = true)
+    private Set<Tag> tags = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -99,17 +132,69 @@ public class Reminder implements Serializable {
         this.dueDate = dueDate;
     }
 
-    public Boolean getCompleted() {
-        return this.completed;
+    public Boolean getIsCompleted() {
+        return this.isCompleted;
     }
 
-    public Reminder completed(Boolean completed) {
-        this.setCompleted(completed);
+    public Reminder isCompleted(Boolean isCompleted) {
+        this.setIsCompleted(isCompleted);
         return this;
     }
 
-    public void setCompleted(Boolean completed) {
-        this.completed = completed;
+    public void setIsCompleted(Boolean isCompleted) {
+        this.isCompleted = isCompleted;
+    }
+
+    public Priority getPriority() {
+        return this.priority;
+    }
+
+    public Reminder priority(Priority priority) {
+        this.setPriority(priority);
+        return this;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
+    public Instant getCreatedDate() {
+        return this.createdDate;
+    }
+
+    public Reminder createdDate(Instant createdDate) {
+        this.setCreatedDate(createdDate);
+        return this;
+    }
+
+    public void setCreatedDate(Instant createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public Instant getLastModifiedDate() {
+        return this.lastModifiedDate;
+    }
+
+    public Reminder lastModifiedDate(Instant lastModifiedDate) {
+        this.setLastModifiedDate(lastModifiedDate);
+        return this;
+    }
+
+    public void setLastModifiedDate(Instant lastModifiedDate) {
+        this.lastModifiedDate = lastModifiedDate;
+    }
+
+    public Category getCategory() {
+        return this.category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public Reminder category(Category category) {
+        this.setCategory(category);
+        return this;
     }
 
     public User getUser() {
@@ -125,16 +210,26 @@ public class Reminder implements Serializable {
         return this;
     }
 
-    public Category getCategory() {
-        return this.category;
+    public Set<Tag> getTags() {
+        return this.tags;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setTags(Set<Tag> tags) {
+        this.tags = tags;
     }
 
-    public Reminder category(Category category) {
-        this.setCategory(category);
+    public Reminder tags(Set<Tag> tags) {
+        this.setTags(tags);
+        return this;
+    }
+
+    public Reminder addTags(Tag tag) {
+        this.tags.add(tag);
+        return this;
+    }
+
+    public Reminder removeTags(Tag tag) {
+        this.tags.remove(tag);
         return this;
     }
 
@@ -165,7 +260,10 @@ public class Reminder implements Serializable {
             ", title='" + getTitle() + "'" +
             ", description='" + getDescription() + "'" +
             ", dueDate='" + getDueDate() + "'" +
-            ", completed='" + getCompleted() + "'" +
+            ", isCompleted='" + getIsCompleted() + "'" +
+            ", priority='" + getPriority() + "'" +
+            ", createdDate='" + getCreatedDate() + "'" +
+            ", lastModifiedDate='" + getLastModifiedDate() + "'" +
             "}";
     }
 }

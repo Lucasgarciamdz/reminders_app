@@ -1,18 +1,23 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, asapScheduler, map, scheduled } from 'rxjs';
+
+import { catchError } from 'rxjs/operators';
 
 import dayjs from 'dayjs/esm';
 
 import { isPresent } from 'app/core/util/operators';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
+import { SearchWithPagination } from 'app/core/request/request.model';
 import { IReminder, NewReminder } from '../reminder.model';
 
 export type PartialUpdateReminder = Partial<IReminder> & Pick<IReminder, 'id'>;
 
-type RestOf<T extends IReminder | NewReminder> = Omit<T, 'dueDate'> & {
+type RestOf<T extends IReminder | NewReminder> = Omit<T, 'dueDate' | 'createdDate' | 'lastModifiedDate'> & {
   dueDate?: string | null;
+  createdDate?: string | null;
+  lastModifiedDate?: string | null;
 };
 
 export type RestReminder = RestOf<IReminder>;
@@ -30,6 +35,7 @@ export class ReminderService {
   protected readonly applicationConfigService = inject(ApplicationConfigService);
 
   protected resourceUrl = this.applicationConfigService.getEndpointFor('api/reminders');
+  protected resourceSearchUrl = this.applicationConfigService.getEndpointFor('api/reminders/_search');
 
   create(reminder: NewReminder): Observable<EntityResponseType> {
     const copy = this.convertDateFromClient(reminder);
@@ -69,6 +75,15 @@ export class ReminderService {
     return this.http.delete(`${this.resourceUrl}/${id}`, { observe: 'response' });
   }
 
+  search(req: SearchWithPagination): Observable<EntityArrayResponseType> {
+    const options = createRequestOption(req);
+    return this.http.get<RestReminder[]>(this.resourceSearchUrl, { params: options, observe: 'response' }).pipe(
+      map(res => this.convertResponseArrayFromServer(res)),
+
+      catchError(() => scheduled([new HttpResponse<IReminder[]>()], asapScheduler)),
+    );
+  }
+
   getReminderIdentifier(reminder: Pick<IReminder, 'id'>): number {
     return reminder.id;
   }
@@ -101,6 +116,8 @@ export class ReminderService {
     return {
       ...reminder,
       dueDate: reminder.dueDate?.toJSON() ?? null,
+      createdDate: reminder.createdDate?.toJSON() ?? null,
+      lastModifiedDate: reminder.lastModifiedDate?.toJSON() ?? null,
     };
   }
 
@@ -108,6 +125,8 @@ export class ReminderService {
     return {
       ...restReminder,
       dueDate: restReminder.dueDate ? dayjs(restReminder.dueDate) : undefined,
+      createdDate: restReminder.createdDate ? dayjs(restReminder.createdDate) : undefined,
+      lastModifiedDate: restReminder.lastModifiedDate ? dayjs(restReminder.lastModifiedDate) : undefined,
     };
   }
 

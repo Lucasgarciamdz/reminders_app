@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import ar.edu.um.IntegrationTest;
 import ar.edu.um.domain.User;
 import ar.edu.um.repository.UserRepository;
+import ar.edu.um.repository.search.UserSearchRepository;
 import ar.edu.um.security.AuthoritiesConstants;
 import ar.edu.um.service.UserService;
 import java.util.Objects;
@@ -36,6 +37,14 @@ class PublicUserResourceIT {
 
     @Autowired
     private UserService userService;
+
+    /**
+     * This repository is mocked in the ar.edu.um.repository.search test package.
+     *
+     * @see ar.edu.um.repository.search.UserSearchRepositoryMockConfiguration
+     */
+    @Autowired
+    private UserSearchRepository mockUserSearchRepository;
 
     @Autowired
     private CacheManager cacheManager;

@@ -96,12 +96,12 @@ class SyncService {
       try {
         await this.processSyncOperation(operation);
         await offlineStorageService.removeSyncOperation(operation.id);
-        
+
         // Clear any existing retry timeout for this operation
         this.clearRetryTimeout(operation.id);
       } catch (error) {
         console.error('Failed to process sync operation:', error);
-        
+
         // Check if we should retry this operation
         if (operation.retryCount < this.maxRetries) {
           // Increment retry count
@@ -117,7 +117,7 @@ class SyncService {
           await offlineStorageService.updateSyncOperation(operation.id, {
             error: `Max retries exceeded: ${String(error)}`,
           });
-          
+
           errors.push({ operation, error: String(error) });
         }
       }
@@ -159,7 +159,7 @@ class SyncService {
       try {
         // Remove from timeout map
         this.retryTimeouts.delete(operation.id);
-        
+
         // Dispatch retry attempt event
         window.dispatchEvent(new CustomEvent('sync:retry-attempt', {
           detail: {
@@ -171,14 +171,14 @@ class SyncService {
         // Retry the operation
         await this.processSyncOperation(operation);
         await offlineStorageService.removeSyncOperation(operation.id);
-        
+
         // Dispatch retry success event
         window.dispatchEvent(new CustomEvent('sync:retry-success', {
           detail: { operationId: operation.id }
         }));
       } catch (error) {
         console.error('Retry failed for operation:', operation.id, error);
-        
+
         // Update retry count and schedule next retry if within limits
         const updatedOperation = {
           ...operation,
@@ -191,14 +191,14 @@ class SyncService {
             retryCount: updatedOperation.retryCount,
             error: String(error),
           });
-          
+
           this.scheduleRetry(updatedOperation);
         } else {
           // Max retries exceeded
           await offlineStorageService.updateSyncOperation(operation.id, {
             error: `Max retries exceeded: ${String(error)}`,
           });
-          
+
           // Dispatch retry failed event
           window.dispatchEvent(new CustomEvent('sync:retry-failed', {
             detail: {
@@ -246,7 +246,10 @@ class SyncService {
       throw new Error('No data provided for create operation');
     }
 
-    const createRequest: CreateReminderRequest = operation.data;
+    const createRequest: CreateReminderRequest & { createdDate: string } = {
+      ...operation.data,
+      createdDate: operation.data.createdDate || new Date().toISOString(),
+    };
     const response = await apiService.createReminder(createRequest);
     const serverReminder = response.data;
 
@@ -270,8 +273,22 @@ class SyncService {
       throw new Error('Missing reminder ID or data for update operation');
     }
 
+    // Get the current reminder data to ensure we have all required fields
+    const currentReminder = await offlineStorageService.getLocalReminderById(operation.reminderId);
+    if (!currentReminder) {
+      throw new Error(`Reminder with ID ${operation.reminderId} not found locally`);
+    }
+
+    // Construct complete update request with all required fields
     const updateRequest: UpdateReminderRequest = {
       id: operation.reminderId,
+      title: currentReminder.title,
+      description: currentReminder.description,
+      dueDate: currentReminder.dueDate,
+      isCompleted: currentReminder.isCompleted,
+      priority: currentReminder.priority,
+      createdDate: currentReminder.createdDate,
+      // Apply the updates on top of the current data
       ...operation.data,
     };
 
@@ -374,24 +391,24 @@ class SyncService {
       // Accept server version - fetch latest from server
       const response = await apiService.getReminderById(conflict.id);
       const serverReminder = response.data;
-      
+
       const updatedReminder: LocalReminder = {
         ...serverReminder,
         syncStatus: 'SYNCED',
         lastModified: Date.now(),
       };
-      
+
       await offlineStorageService.saveLocalReminder(updatedReminder);
     } else {
       // Accept local version - queue for sync
       await this.queueUpdateOperation(conflict.id, conflict);
-      
+
       const updatedReminder: LocalReminder = {
         ...conflict,
         syncStatus: 'PENDING',
         lastModified: Date.now(),
       };
-      
+
       await offlineStorageService.saveLocalReminder(updatedReminder);
     }
   }

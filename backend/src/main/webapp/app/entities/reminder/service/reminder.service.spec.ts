@@ -10,6 +10,8 @@ import { ReminderService, RestReminder } from './reminder.service';
 const requireRestSample: RestReminder = {
   ...sampleWithRequiredData,
   dueDate: sampleWithRequiredData.dueDate?.toJSON(),
+  createdDate: sampleWithRequiredData.createdDate?.toJSON(),
+  lastModifiedDate: sampleWithRequiredData.lastModifiedDate?.toJSON(),
 };
 
 describe('Reminder Service', () => {
@@ -95,6 +97,20 @@ describe('Reminder Service', () => {
       const req = httpMock.expectOne({ method: 'DELETE' });
       req.flush({ status: 200 });
       expect(expectedResult).toBe(expected);
+    });
+
+    it('should handle exceptions for searching a Reminder', () => {
+      const queryObject: any = {
+        page: 0,
+        size: 20,
+        query: '',
+        sort: [],
+      };
+      service.search(queryObject).subscribe(() => expectedResult);
+
+      const req = httpMock.expectOne({ method: 'GET' });
+      req.flush(null, { status: 500, statusText: 'Internal Server Error' });
+      expect(expectedResult).toBe(null);
     });
 
     describe('addReminderToCollectionIfMissing', () => {
