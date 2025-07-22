@@ -1,0 +1,28 @@
+{
+  "id": 1,
+  "title": "Complete project documentation",
+  "description": "Write comprehensive documentation for the reminders application",
+  "dueDate": "2025-01-25T10:00:00Z",
+  "isCompleted": true,
+  "priority": "HIGH",
+  "createdDate": "2025-01-20T08:00:00Z",
+  "lastModifiedDate": "2025-01-22T10:30:00Z",
+  "category": {
+    "id": 1,
+    "name": "Work",
+    "color": "#2196F3",
+    "description": "Work related tasks"
+  },
+  "tags": [
+    {
+      "id": 1,
+      "name": "documentation",
+      "color": "#FF9800"
+    },
+    {
+      "id": 2,
+      "name": "urgent",
+      "color": "#F44336"
+    }
+  ]
+}

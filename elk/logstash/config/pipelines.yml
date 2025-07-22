@@ -1,0 +1,11 @@
+- pipeline.id: main
+  path.config: "/usr/share/logstash/pipeline/main.conf"
+  pipeline.workers: 1
+  
+- pipeline.id: docker-logs
+  path.config: "/usr/share/logstash/pipeline/docker-logs.conf"
+  pipeline.workers: 1
+  
+- pipeline.id: application-logs
+  path.config: "/usr/share/logstash/pipeline/application-logs.conf"
+  pipeline.workers: 1

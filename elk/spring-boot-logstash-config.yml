@@ -1,0 +1,46 @@
+# Spring Boot Configuration for ELK Integration
+# Add this to your application.yml or application-prod.yml
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p %t --- [%15.15t] %-40.40logger{39} : %m%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p %t --- [%15.15t] %-40.40logger{39} : %m%n"
+  level:
+    root: INFO
+    ar.edu.um: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  file:
+    name: logs/application.log
+    max-size: 10MB
+    max-history: 30
+
+# Management endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,loggers,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+    loggers:
+      enabled: true
+
+# Application info for logs
+info:
+  app:
+    name: '@project.name@'
+    version: '@project.version@'
+    description: '@project.description@'
+
+# Custom properties for ELK integration
+elk:
+  logstash:
+    host: localhost
+    port: 5002
+    enabled: true
+  application:
+    name: reminders-app
+    environment: ${SPRING_PROFILES_ACTIVE:development}

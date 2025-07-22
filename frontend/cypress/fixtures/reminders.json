@@ -1,0 +1,81 @@
+[
+  {
+    "id": 1,
+    "title": "Complete project documentation",
+    "description": "Write comprehensive documentation for the reminders application",
+    "dueDate": "2025-01-25T10:00:00Z",
+    "isCompleted": false,
+    "priority": "HIGH",
+    "createdDate": "2025-01-20T08:00:00Z",
+    "lastModifiedDate": "2025-01-20T08:00:00Z",
+    "category": {
+      "id": 1,
+      "name": "Work",
+      "color": "#2196F3",
+      "description": "Work related tasks"
+    },
+    "tags": [
+      {
+        "id": 1,
+        "name": "documentation",
+        "color": "#FF9800"
+      },
+      {
+        "id": 2,
+        "name": "urgent",
+        "color": "#F44336"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Buy groceries",
+    "description": "Milk, bread, eggs, and vegetables for the week",
+    "dueDate": "2025-01-23T18:00:00Z",
+    "isCompleted": true,
+    "priority": "MEDIUM",
+    "createdDate": "2025-01-21T09:00:00Z",
+    "lastModifiedDate": "2025-01-22T15:30:00Z",
+    "category": {
+      "id": 2,
+      "name": "Personal",
+      "color": "#4CAF50",
+      "description": "Personal tasks and errands"
+    },
+    "tags": [
+      {
+        "id": 3,
+        "name": "shopping",
+        "color": "#9C27B0"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "title": "Schedule dentist appointment",
+    "description": "Annual checkup and cleaning",
+    "dueDate": "2025-01-30T14:00:00Z",
+    "isCompleted": false,
+    "priority": "LOW",
+    "createdDate": "2025-01-19T11:00:00Z",
+    "lastModifiedDate": "2025-01-19T11:00:00Z",
+    "category": {
+      "id": 3,
+      "name": "Health",
+      "color": "#E91E63",
+      "description": "Health and medical appointments"
+    },
+    "tags": [
+      {
+        "id": 4,
+        "name": "health",
+        "color": "#E91E63"
+      },
+      {
+        "id": 5,
+        "name": "appointment",
+        "color": "#607D8B"
+      }
+    ]
+  }
+]

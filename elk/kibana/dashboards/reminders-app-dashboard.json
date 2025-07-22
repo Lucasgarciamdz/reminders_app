@@ -1,0 +1,37 @@
+{
+  "version": "8.11.0",
+  "objects": [
+    {
+      "id": "reminders-app-logs",
+      "type": "index-pattern",
+      "attributes": {
+        "title": "application-logs-*",
+        "timeFieldName": "@timestamp",
+        "fields": "[{\"name\":\"@timestamp\",\"type\":\"date\",\"searchable\":true,\"aggregatable\":true},{\"name\":\"level\",\"type\":\"string\",\"searchable\":true,\"aggregatable\":true},{\"name\":\"logger\",\"type\":\"string\",\"searchable\":true,\"aggregatable\":true},{\"name\":\"message\",\"type\":\"string\",\"searchable\":true,\"aggregatable\":false},{\"name\":\"thread\",\"type\":\"string\",\"searchable\":true,\"aggregatable\":true},{\"name\":\"application\",\"type\":\"string\",\"searchable\":true,\"aggregatable\":true}]"
+      }
+    },
+    {
+      "id": "docker-logs-pattern",
+      "type": "index-pattern",
+      "attributes": {
+        "title": "*-logs-*",
+        "timeFieldName": "@timestamp"
+      }
+    },
+    {
+      "id": "reminders-dashboard",
+      "type": "dashboard",
+      "attributes": {
+        "title": "Reminders Application Logs",
+        "description": "Dashboard for monitoring Reminders application logs",
+        "panelsJSON": "[{\"version\":\"8.11.0\",\"gridData\":{\"x\":0,\"y\":0,\"w\":24,\"h\":15,\"i\":\"1\"},\"panelIndex\":\"1\",\"embeddableConfig\":{},\"panelRefName\":\"panel_1\"}]",
+        "optionsJSON": "{\"useMargins\":true,\"syncColors\":false,\"hidePanelTitles\":false}",
+        "version": 1,
+        "timeRestore": false,
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[]}"
+        }
+      }
+    }
+  ]
+}

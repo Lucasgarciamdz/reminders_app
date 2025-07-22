@@ -47,12 +47,14 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
+    "cypress": "^13.6.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^4.6.2",
-    "prettier": "^3.4.2"
+    "prettier": "^3.4.2",
+    "start-server-and-test": "^2.0.3"
   },
   "scripts": {
     "start": "ESLINT_NO_DEV_ERRORS=true react-scripts start",
@@ -61,7 +63,12 @@
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix",
-    "format": "prettier --write src/**/*.{ts,tsx,js,jsx,json,css,md}"
+    "format": "prettier --write src/**/*.{ts,tsx,js,jsx,json,css,md}",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "cypress:run:headless": "cypress run --headless",
+    "test:e2e": "start-server-and-test start http://localhost:3000 cypress:run",
+    "test:e2e:open": "start-server-and-test start http://localhost:3000 cypress:open"
   },
   "eslintConfig": {
     "extends": [

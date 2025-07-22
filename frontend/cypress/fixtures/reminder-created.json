@@ -1,0 +1,12 @@
+{
+  "id": 4,
+  "title": "New Test Reminder",
+  "description": "This is a test reminder created via Cypress",
+  "dueDate": "2025-01-25T12:00:00Z",
+  "isCompleted": false,
+  "priority": "MEDIUM",
+  "createdDate": "2025-01-22T10:00:00Z",
+  "lastModifiedDate": "2025-01-22T10:00:00Z",
+  "category": null,
+  "tags": []
+}
