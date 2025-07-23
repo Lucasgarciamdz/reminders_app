@@ -157,6 +157,7 @@ const ReminderFilters: React.FC<ReminderFiltersProps> = ({
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Card 
+        data-testid="reminder-filters"
         elevation={2}
         sx={{ 
           mb: 3,
@@ -269,6 +270,7 @@ const ReminderFilters: React.FC<ReminderFiltersProps> = ({
                   </Typography>
                 </Box>
                 <ToggleButtonGroup
+                  data-testid="filter-completed"
                   value={getCurrentCompletionValue()}
                   exclusive
                   onChange={handleCompletionChange}
@@ -301,6 +303,7 @@ const ReminderFilters: React.FC<ReminderFiltersProps> = ({
                 <FormControl fullWidth size="small">
                   <InputLabel>Select priorities</InputLabel>
                   <Select
+                    data-testid="filter-priority"
                     multiple
                     value={filters.priority || []}
                     onChange={handlePriorityChange}

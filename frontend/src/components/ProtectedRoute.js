@@ -9,8 +9,8 @@ const ProtectedRoute = ({ children }) => {
   // Show loading spinner while checking authentication
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner">
+      <div className="loading-container" data-testid="auth-loading">
+        <div className="loading-spinner" data-testid="loading">
           <div className="spinner"></div>
           <p>Loading...</p>
         </div>

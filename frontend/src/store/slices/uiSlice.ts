@@ -21,6 +21,7 @@ const uiSlice = createSlice({
     },
     hideAddReminderForm: (state) => {
       state.showAddForm = false;
+      console.log('hideAddReminderForm dispatched. showAddForm is now:', state.showAddForm);
     },
     setSelectedReminder: (state, action: PayloadAction<any>) => {
       state.selectedReminder = action.payload;

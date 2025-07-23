@@ -4,7 +4,5 @@
   "firstName": "Admin",
   "lastName": "User",
   "email": "admin@localhost",
-  "activated": true,
-  "langKey": "en",
   "authorities": ["ROLE_ADMIN", "ROLE_USER"]
 }

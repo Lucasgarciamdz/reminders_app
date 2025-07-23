@@ -1,3 +1,11 @@
 {
-  "id_token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImF1dGgiOiJST0xFX0FETUlOLFJPTEVfVVNFUiIsImV4cCI6MTY0MjY4NjQwMH0.test-token"
+  "id_token": "eyJhbGciOiJIUzUxMiJ9.mock-jwt-token",
+  "user": {
+    "id": 1,
+    "login": "admin",
+    "firstName": "Admin",
+    "lastName": "User",
+    "email": "admin@localhost",
+    "authorities": ["ROLE_ADMIN", "ROLE_USER"]
+  }
 }

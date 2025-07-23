@@ -40,10 +40,11 @@ module.exports = defineConfig({
 
   component: {
     devServer: {
-      framework: 'create-react-app',
-      bundler: 'webpack',
+      framework: 'react',
+      bundler: 'vite',
     },
     specPattern: 'src/**/*.cy.{js,jsx,ts,tsx}',
     supportFile: 'cypress/support/component.js',
+    indexHtmlFile: 'cypress/support/component-index.html',
   },
 })

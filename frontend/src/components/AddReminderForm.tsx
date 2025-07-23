@@ -15,17 +15,15 @@ import {
   Switch,
   Box,
   Typography,
-  Alert,
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { format } from 'date-fns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 
-import { CreateReminderRequest, Priority, AddReminderFormProps } from '../types';
+import { CreateReminderRequest, Priority } from '../types';
 import { createReminder } from '../store/slices/remindersSlice';
 import { hideAddReminderForm, selectShowAddForm, addNotification } from '../store/slices/uiSlice';
 import { AppDispatch } from '../store';
@@ -128,12 +126,15 @@ const AddReminderForm: React.FC = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Dialog
+        data-testid="add-reminder-form"
         open={showForm}
         onClose={handleCancel}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          sx: { borderRadius: 2 }
+        slotProps={{
+          paper: {
+            sx: { borderRadius: 2 }
+          }
         }}
       >
         <DialogTitle>
@@ -161,6 +162,7 @@ const AddReminderForm: React.FC = () => {
               render={({ field }) => (
                 <TextField
                   {...field}
+                  data-testid="reminder-title"
                   label="Reminder Title"
                   fullWidth
                   error={!!errors.title}
@@ -184,6 +186,7 @@ const AddReminderForm: React.FC = () => {
               render={({ field }) => (
                 <TextField
                   {...field}
+                  data-testid="reminder-description"
                   label="Description (Optional)"
                   multiline
                   rows={3}
@@ -215,6 +218,9 @@ const AddReminderForm: React.FC = () => {
                       error: !!errors.reminderDate,
                       helperText: errors.reminderDate?.message,
                       variant: 'outlined',
+                      inputProps: {
+                        'data-testid': 'reminder-due-date',
+                      },
                     },
                   }}
                 />
@@ -277,6 +283,7 @@ const AddReminderForm: React.FC = () => {
                   <InputLabel>Priority</InputLabel>
                   <Select
                     {...field}
+                    data-testid="reminder-priority"
                     label="Priority"
                     variant="outlined"
                   >
@@ -333,6 +340,7 @@ const AddReminderForm: React.FC = () => {
 
         <DialogActions sx={{ p: 3, gap: 1 }}>
           <Button
+            data-testid="cancel-reminder"
             onClick={handleCancel}
             variant="outlined"
             disabled={isSubmitting}
@@ -340,6 +348,7 @@ const AddReminderForm: React.FC = () => {
             Cancel
           </Button>
           <Button
+            data-testid="save-reminder"
             type="submit"
             variant="contained"
             disabled={isSubmitting}

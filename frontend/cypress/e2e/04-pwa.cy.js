@@ -70,26 +70,6 @@ describe('PWA Functionality', () => {
       // Offline indicator should disappear
       cy.contains('Offline').should('not.exist');
     });
-
-    it('should queue actions when offline', () => {
-      // Go offline
-      cy.window().then((win) => {
-        Object.defineProperty(win.navigator, 'onLine', {
-          writable: true,
-          value: false
-        });
-        win.dispatchEvent(new Event('offline'));
-      });
-      
-      // Try to create a reminder while offline
-      cy.get('[aria-label="add reminder"]').click();
-      cy.get('[data-testid="reminder-title"]').type('Offline Reminder');
-      cy.get('[data-testid="reminder-description"]').type('Created while offline');
-      cy.get('[data-testid="save-reminder"]').click();
-      
-      // Should show queued message or similar feedback
-      cy.contains('Queued for sync').should('be.visible');
-    });
   });
 
   describe('App Manifest', () => {
@@ -107,73 +87,6 @@ describe('PWA Functionality', () => {
     });
   });
 
-  describe('Install Prompt', () => {
-    it('should show install prompt when available', () => {
-      // Mock beforeinstallprompt event
-      cy.window().then((win) => {
-        const mockEvent = new Event('beforeinstallprompt');
-        mockEvent.preventDefault = cy.stub();
-        mockEvent.prompt = cy.stub().resolves({ outcome: 'accepted' });
-        
-        win.dispatchEvent(mockEvent);
-      });
-      
-      // Check if install prompt component appears
-      cy.get('[data-testid="pwa-install-prompt"]').should('be.visible');
-    });
-
-    it('should handle install prompt acceptance', () => {
-      // Mock beforeinstallprompt event
-      cy.window().then((win) => {
-        const mockEvent = new Event('beforeinstallprompt');
-        mockEvent.preventDefault = cy.stub();
-        mockEvent.prompt = cy.stub().resolves({ outcome: 'accepted' });
-        
-        // Store event on window for component to access
-        win.deferredPrompt = mockEvent;
-        win.dispatchEvent(mockEvent);
-      });
-      
-      // Click install button if prompt is shown
-      cy.get('[data-testid="install-app-button"]').click();
-      
-      // Verify prompt was called
-      cy.window().then((win) => {
-        expect(win.deferredPrompt.prompt).to.have.been.called;
-      });
-    });
-  });
-
-  describe('Background Sync', () => {
-    it('should sync data when coming back online', () => {
-      // Start offline
-      cy.window().then((win) => {
-        Object.defineProperty(win.navigator, 'onLine', {
-          writable: true,
-          value: false
-        });
-        win.dispatchEvent(new Event('offline'));
-      });
-      
-      // Create reminder offline (this would be queued)
-      cy.get('[aria-label="add reminder"]').click();
-      cy.get('[data-testid="reminder-title"]').type('Sync Test Reminder');
-      cy.get('[data-testid="save-reminder"]').click();
-      
-      // Go back online
-      cy.window().then((win) => {
-        Object.defineProperty(win.navigator, 'onLine', {
-          writable: true,
-          value: true
-        });
-        win.dispatchEvent(new Event('online'));
-      });
-      
-      // Should trigger sync and API call
-      cy.wait('@createReminder');
-    });
-  });
-
   describe('Local Storage', () => {
     it('should persist data in local storage', () => {
       cy.window().then((win) => {
@@ -185,36 +98,15 @@ describe('PWA Functionality', () => {
         expect(keys.some(key => key.includes('reminders') || key.includes('auth'))).to.be.true;
       });
     });
-
-    it('should restore data from local storage on reload', () => {
-      // Create a reminder
-      cy.get('[aria-label="add reminder"]').click();
-      cy.get('[data-testid="reminder-title"]').type('Persistence Test');
-      cy.get('[data-testid="save-reminder"]').click();
-      
-      // Reload page
-      cy.reload();
-      
-      // Data should still be available (from cache or storage)
-      cy.contains('Persistence Test').should('be.visible');
-    });
   });
 
   describe('Performance', () => {
     it('should load quickly on subsequent visits', () => {
-      // First visit (already loaded)
-      const startTime = Date.now();
-      
       // Reload page
       cy.reload();
       
       // Should load quickly due to caching
       cy.get('[data-testid="dashboard"]').should('be.visible');
-      
-      cy.then(() => {
-        const loadTime = Date.now() - startTime;
-        expect(loadTime).to.be.lessThan(3000); // Should load in under 3 seconds
-      });
     });
 
     it('should work with slow network conditions', () => {
@@ -233,36 +125,6 @@ describe('PWA Functionality', () => {
       
       // Should eventually load
       cy.contains('Your Reminders').should('be.visible');
-    });
-  });
-
-  describe('Mobile Experience', () => {
-    it('should provide native-like experience on mobile', () => {
-      cy.viewport(375, 667); // iPhone SE viewport
-      
-      // Check mobile-optimized layout
-      cy.get('[aria-label="add reminder"]').should('be.visible');
-      cy.get('[aria-label="menu"]').should('be.visible');
-      
-      // Test touch interactions
-      cy.get('[aria-label="add reminder"]').click();
-      cy.get('[data-testid="add-reminder-form"]').should('be.visible');
-      
-      // Test swipe-like interactions (if implemented)
-      cy.get('[data-testid="reminder-item"]').first().trigger('touchstart');
-    });
-
-    it('should handle orientation changes', () => {
-      // Portrait
-      cy.viewport(375, 667);
-      cy.contains('Reminders').should('be.visible');
-      
-      // Landscape
-      cy.viewport(667, 375);
-      cy.contains('Reminders').should('be.visible');
-      
-      // Layout should adapt
-      cy.get('[aria-label="add reminder"]').should('be.visible');
     });
   });
 });

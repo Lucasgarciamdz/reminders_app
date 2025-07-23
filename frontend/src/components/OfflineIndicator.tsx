@@ -267,10 +267,11 @@ const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
       {/* Connection status notifications */}
       <Snackbar
         open={!isOnline}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ mt: 2 }}
       >
         <Alert severity="warning">
-          You're offline. Changes will be saved locally and synced when connection is restored.
+          Working Offline - Sync will resume when connection is restored
         </Alert>
       </Snackbar>
     </>

@@ -111,6 +111,7 @@ const ReminderItem: React.FC<ReminderItemProps> = ({
   return (
     <>
       <Card
+        data-testid="reminder-item"
         sx={{
           mb: 2,
           opacity: reminder.isCompleted ? 0.7 : 1,
@@ -130,6 +131,7 @@ const ReminderItem: React.FC<ReminderItemProps> = ({
             {/* Completion Checkbox */}
             <Box position="relative" display="inline-flex">
               <Checkbox
+                data-testid="toggle-completion"
                 checked={reminder.isCompleted}
                 onChange={handleToggleComplete}
                 color="primary"
@@ -243,6 +245,7 @@ const ReminderItem: React.FC<ReminderItemProps> = ({
                 </Box>
 
                 <IconButton
+                  data-testid="delete-reminder"
                   onClick={handleDeleteClick}
                   color="error"
                   size="small"
@@ -284,6 +287,7 @@ const ReminderItem: React.FC<ReminderItemProps> = ({
         </DialogContent>
         <DialogActions>
           <Button 
+            data-testid="cancel-delete"
             onClick={handleDeleteCancel} 
             color="primary"
             disabled={isDeleting}
@@ -291,6 +295,7 @@ const ReminderItem: React.FC<ReminderItemProps> = ({
             Cancel
           </Button>
           <Button
+            data-testid="confirm-delete"
             onClick={handleDeleteConfirm}
             color="error"
             variant="contained"

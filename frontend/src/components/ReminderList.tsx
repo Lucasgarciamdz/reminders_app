@@ -82,7 +82,7 @@ const ReminderList: React.FC<ReminderListProps> = ({
             {reminders.length === 0 ? (
               <LoadingSkeleton />
             ) : (
-              <Box display="flex" justifyContent="center" py={4}>
+              <Box display="flex" justifyContent="center" py={4} data-testid="loading">
                 <CircularProgress size={40} />
               </Box>
             )}
@@ -127,6 +127,7 @@ const ReminderList: React.FC<ReminderListProps> = ({
                 Your Reminders
               </Typography>
               <Typography
+                data-testid="reminders-count"
                 variant="body2"
                 color="text.secondary"
                 sx={{
@@ -173,7 +174,7 @@ const ReminderList: React.FC<ReminderListProps> = ({
                 gap={3}
               >
                 <Box textAlign="center">
-                  <Typography variant="h6" color="success.main" fontWeight="bold">
+                  <Typography data-testid="completed-count" variant="h6" color="success.main" fontWeight="bold">
                     {reminders.filter(r => r.isCompleted).length}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -181,7 +182,7 @@ const ReminderList: React.FC<ReminderListProps> = ({
                   </Typography>
                 </Box>
                 <Box textAlign="center">
-                  <Typography variant="h6" color="warning.main" fontWeight="bold">
+                  <Typography data-testid="pending-count" variant="h6" color="warning.main" fontWeight="bold">
                     {reminders.filter(r => !r.isCompleted).length}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">

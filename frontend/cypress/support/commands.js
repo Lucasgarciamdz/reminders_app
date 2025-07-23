@@ -15,8 +15,11 @@
  * @param {string} username - Username for login
  * @param {string} password - Password for login
  */
-Cypress.Commands.add('login', (username = Cypress.env('TEST_USERNAME'), password = Cypress.env('TEST_PASSWORD')) => {
+Cypress.Commands.add('login', (username = 'admin', password = 'admin') => {
   cy.session([username, password], () => {
+    // Setup API mocks before visiting login page
+    cy.mockApiResponses();
+    
     cy.visit('/login');
     
     // Fill login form
@@ -26,9 +29,28 @@ Cypress.Commands.add('login', (username = Cypress.env('TEST_USERNAME'), password
     // Submit form
     cy.get('.login-button').click();
     
-    // Wait for successful login
+    // Wait for login API call to complete
+    cy.wait('@login');
+    
+    // Wait for successful login - check URL first
     cy.url().should('not.include', '/login');
-    cy.get('[data-testid="dashboard"]', { timeout: 10000 }).should('exist');
+    cy.url().should('include', '/dashboard');
+    
+    // Wait for any authentication loading states to complete
+    cy.get('[data-testid="loading"]', { timeout: 5000 }).should('not.exist');
+    cy.get('[data-testid="auth-loading"]', { timeout: 5000 }).should('not.exist');
+    
+    // Wait for dashboard to load with increased timeout and better error handling
+    cy.get('[data-testid="dashboard"]', { timeout: 25000 }).should('exist').should('be.visible');
+    
+    // Wait for app bar to be visible (indicates full page load)
+    cy.get('[role="banner"]', { timeout: 10000 }).should('be.visible');
+    
+    // Wait for main content to be ready
+    cy.get('main', { timeout: 10000 }).should('exist');
+    
+    // Additional wait for Redux state to initialize
+    cy.wait(1000);
   });
 });
 
@@ -48,7 +70,22 @@ Cypress.Commands.add('logout', () => {
  */
 Cypress.Commands.add('goToDashboard', () => {
   cy.visit('/dashboard');
-  cy.get('[data-testid="dashboard"]', { timeout: 10000 }).should('exist');
+  
+  // Wait for any loading states to complete
+  cy.get('[data-testid="loading"]', { timeout: 5000 }).should('not.exist');
+  cy.get('[data-testid="auth-loading"]', { timeout: 5000 }).should('not.exist');
+  
+  // Wait for dashboard to load - be more flexible about the selector
+  cy.get('[data-testid="dashboard"]', { timeout: 15000 }).should('exist').should('be.visible');
+  
+  // Wait for app bar to be visible (this is more reliable)
+  cy.get('[role="banner"]', { timeout: 10000 }).should('be.visible');
+  
+  // Wait for the main content area to be ready
+  cy.get('main', { timeout: 10000 }).should('exist');
+  
+  // Additional wait for React to fully render
+  cy.wait(500);
 });
 
 // -- Reminder Commands --
@@ -159,15 +196,81 @@ Cypress.Commands.add('testResponsive', (callback) => {
  * Mock API responses
  */
 Cypress.Commands.add('mockApiResponses', () => {
-  cy.intercept('POST', '/api/authenticate', { fixture: 'auth-success.json' }).as('login');
-  cy.intercept('GET', '/api/account', { fixture: 'user.json' }).as('getUser');
-  cy.intercept('GET', '/api/reminders*', { fixture: 'reminders.json' }).as('getReminders');
-  cy.intercept('POST', '/api/reminders', { fixture: 'reminder-created.json' }).as('createReminder');
-  cy.intercept('PUT', '/api/reminders/*', { fixture: 'reminder-updated.json' }).as('updateReminder');
-  cy.intercept('DELETE', '/api/reminders/*', {}).as('deleteReminder');
+  // Mock authentication endpoint with proper response
+  cy.intercept('POST', '/api/authenticate', {
+    statusCode: 200,
+    body: {
+      id_token: 'eyJhbGciOiJIUzUxMiJ9.mock-jwt-token',
+      user: {
+        id: 1,
+        login: 'admin',
+        firstName: 'Admin',
+        lastName: 'User',
+        email: 'admin@localhost',
+        authorities: ['ROLE_ADMIN', 'ROLE_USER']
+      }
+    }
+  }).as('login');
+  
+  // Mock user account endpoint
+  cy.intercept('GET', '/api/account', {
+    statusCode: 200,
+    body: {
+      id: 1,
+      login: 'admin',
+      firstName: 'Admin',
+      lastName: 'User',
+      email: 'admin@localhost',
+      authorities: ['ROLE_ADMIN', 'ROLE_USER']
+    }
+  }).as('getUser');
+  
+  // Mock reminders endpoint with test data
+  cy.intercept('GET', '/api/reminders*', {
+    statusCode: 200,
+    fixture: 'reminders.json'
+  }).as('getReminders');
+  
+  // Mock other endpoints
+  cy.intercept('POST', '/api/reminders', { 
+    statusCode: 201,
+    body: {
+      id: 1,
+      title: 'Test Reminder',
+      description: 'This is a test reminder',
+      priority: 'MEDIUM',
+      completed: false,
+      createdDate: new Date().toISOString()
+    }
+  }).as('createReminder');
+  
+  cy.intercept('PUT', '/api/reminders/*', { 
+    statusCode: 200,
+    body: {
+      id: 1,
+      title: 'Updated Reminder',
+      description: 'This is an updated reminder',
+      priority: 'HIGH',
+      completed: true,
+      createdDate: new Date().toISOString()
+    }
+  }).as('updateReminder');
+  
+  cy.intercept('DELETE', '/api/reminders/*', { statusCode: 204 }).as('deleteReminder');
 });
 
 // -- Accessibility Commands --
+
+/**
+ * Tab navigation command
+ */
+Cypress.Commands.add('tab', { prevSubject: 'optional' }, (subject) => {
+  if (subject) {
+    cy.wrap(subject).trigger('keydown', { key: 'Tab' });
+  } else {
+    cy.get('body').trigger('keydown', { key: 'Tab' });
+  }
+});
 
 /**
  * Check basic accessibility

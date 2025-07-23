@@ -133,9 +133,12 @@ const Dashboard = () => {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, minHeight: '100vh', backgroundColor: 'grey.50' }}>
+    <Box 
+      data-testid="dashboard"
+      sx={{ flexGrow: 1, minHeight: '100vh', backgroundColor: 'grey.50' }}
+    >
       {/* App Bar */}
-      <AppBar position="sticky" elevation={1}>
+      <AppBar position="sticky" elevation={1} role="banner">
         <Toolbar>
           {/* Menu Icon (Mobile) */}
           {isMobile && (
@@ -157,7 +160,7 @@ const Dashboard = () => {
           {/* Offline Indicator */}
           {!isOnline && (
             <Box display="flex" alignItems="center" mr={2}>
-              <OfflineIcon sx={{ mr: 1, fontSize: 20 }} />
+              <OfflineIcon data-testid="offline-icon" sx={{ mr: 1, fontSize: 20 }} />
               <Typography variant="body2">Offline</Typography>
             </Box>
           )}
@@ -177,6 +180,7 @@ const Dashboard = () => {
             color="inherit"
             onClick={handleRefresh}
             disabled={loading}
+            aria-label="refresh"
             sx={{ mr: 1 }}
           >
             <RefreshIcon />
