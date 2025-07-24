@@ -4,17 +4,15 @@
 logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p %t --- [%15.15t] %-40.40logger{39} : %m%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p %t --- [%15.15t] %-40.40logger{39} : %m%n"
   level:
     root: INFO
     ar.edu.um: DEBUG
-    org.springframework.web: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   file:
     name: logs/application.log
     max-size: 10MB
     max-history: 30
+
+
 
 # Management endpoints for monitoring
 management:
@@ -35,11 +33,11 @@ info:
     version: '@project.version@'
     description: '@project.description@'
 
-# Custom properties for ELK integration
+# Custom ELK properties
 elk:
   logstash:
     host: localhost
-    port: 5002
+    port: 5002           # Application-specific logs
     enabled: true
   application:
     name: reminders-app

@@ -3,8 +3,8 @@
 ## ✅ What Has Been Created
 
 ### 1. Docker Configuration
-- **Updated `docker-compose.yml`** - Added Kibana and Logstash services to your existing setup
-- **Standalone `elk/docker-compose.elk.yml`** - Complete ELK stack for independent deployment
+- **Updated `docker compose.yml`** - Added Kibana and Logstash services to your existing setup
+- **Standalone `elk/docker compose.elk.yml`** - Complete ELK stack for independent deployment
 - **Health checks and dependencies** - Proper service startup order and monitoring
 
 ### 2. Logstash Configuration
@@ -42,8 +42,8 @@
 
 ### Step 1: Start ELK Stack
 ```bash
-# Option A: Use existing docker-compose (recommended)
-docker-compose up -d
+# Option A: Use existing docker compose (recommended)
+docker compose up -d
 
 # Option B: Use standalone ELK stack
 cd elk
@@ -141,7 +141,7 @@ Add to your `application.yml`:
 ./elk/stop-elk.sh purge
 
 # View logs
-docker-compose logs -f logstash
+docker compose logs -f logstash
 
 # Check Elasticsearch indices
 curl http://localhost:9200/_cat/indices?v
@@ -176,12 +176,12 @@ echo '{"message":"test","level":"INFO"}' | nc localhost 5002
 ### Debug Commands
 ```bash
 # Check service health
-docker-compose ps
+docker compose ps
 
 # View specific service logs
-docker-compose logs elasticsearch
-docker-compose logs kibana
-docker-compose logs logstash
+docker compose logs elasticsearch
+docker compose logs kibana
+docker compose logs logstash
 
 # Test connectivity
 curl http://localhost:9200/_cluster/health

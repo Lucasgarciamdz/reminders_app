@@ -27,10 +27,10 @@ This guide helps you implement a complete ELK Stack (Elasticsearch, Logstash, Ki
 
 ### Option 1: Integrated with Existing Docker Compose
 
-1. **Use the updated docker-compose.yml** (already modified in your project)
+1. **Use the updated docker compose.yml** (already modified in your project)
 2. **Start the complete stack:**
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 ### Option 2: Standalone ELK Stack
@@ -48,7 +48,7 @@ This guide helps you implement a complete ELK Stack (Elasticsearch, Logstash, Ki
 
 3. **Or manually start:**
    ```bash
-   docker-compose -f docker-compose.elk.yml up -d
+   docker compose -f docker compose.elk.yml up -d
    ```
 
 ## Configuration Details
@@ -263,9 +263,9 @@ Elasticsearch indices are created daily. To manage storage:
 
 1. **Services not starting**
    ```bash
-   docker-compose logs elasticsearch
-   docker-compose logs kibana
-   docker-compose logs logstash
+   docker compose logs elasticsearch
+   docker compose logs kibana
+   docker compose logs logstash
    ```
 
 2. **Logs not appearing**
@@ -282,10 +282,10 @@ Elasticsearch indices are created daily. To manage storage:
 
 ```bash
 # View logs
-docker-compose logs -f logstash
+docker compose logs -f logstash
 
 # Restart services
-docker-compose restart logstash
+docker compose restart logstash
 
 # Check Elasticsearch indices
 curl http://localhost:9200/_cat/indices?v

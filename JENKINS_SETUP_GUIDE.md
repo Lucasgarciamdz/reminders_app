@@ -5,7 +5,7 @@
 1. **`Jenkinsfile`** - Pipeline de Jenkins para CI/CD
 2. **`backend/Dockerfile`** - Imagen Docker para el backend (Spring Boot)
 3. **`frontend/Dockerfile`** - Imagen Docker para el frontend (React PWA)
-4. **`docker-compose.yml`** - Configuración para ejecutar toda la aplicación
+4. **`docker compose.yml`** - Configuración para ejecutar toda la aplicación
 
 ## Configuración Requerida en Jenkins
 
@@ -48,10 +48,10 @@ cd ../frontend
 docker build -t reminders-frontend .
 ```
 
-### Ejecutar con docker-compose:
+### Ejecutar con docker compose:
 ```bash
 # Desde la raíz del proyecto
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Acceder a la aplicación:

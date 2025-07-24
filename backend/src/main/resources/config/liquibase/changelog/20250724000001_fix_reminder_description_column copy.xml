@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Fix reminder description column type issue.
+        This migration ensures the description column is properly set to TEXT type in PostgreSQL.
+    -->
+    <changeSet id="20250724000001-1" author="system-fix">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="reminder"/>
+            <columnExists tableName="reminder" columnName="description"/>
+        </preConditions>
+        
+        <!-- Drop and recreate the description column with proper TEXT type -->
+        <dropColumn tableName="reminder" columnName="description"/>
+        
+        <addColumn tableName="reminder">
+            <column name="description" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        
+        <rollback>
+            <dropColumn tableName="reminder" columnName="description"/>
+            <addColumn tableName="reminder">
+                <column name="description" type="${clobType}">
+                    <constraints nullable="true"/>
+                </column>
+            </addColumn>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

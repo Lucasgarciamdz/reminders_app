@@ -67,9 +67,9 @@ jhipster:
     # To test json console appender
     use-json-format: false
     logstash:
-      enabled: false
-      host: localhost
-      port: 5000
+      enabled: true        # Enable logstash integration
+      host: logstash      # Logstash host
+      port: 5000          # Use port 5000 (main pipeline)
       ring-buffer-size: 512
   security:
     authentication:

@@ -98,9 +98,9 @@ jhipster:
   logging:
     use-json-format: false # By default, logs are not in Json format
     logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
-      enabled: false
-      host: localhost
-      port: 5000
+      enabled: true        # Enable logstash integration
+      host: logstash      # Logstash host
+      port: 5000          # Use port 5000 (main pipeline)
       ring-buffer-size: 512
 # ===================================================================
 # Application specific properties

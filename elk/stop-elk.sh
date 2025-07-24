@@ -10,14 +10,14 @@ echo "🛑 Stopping ELK Stack..."
 # Function to stop services
 stop_services() {
     echo "📦 Stopping ELK containers..."
-    docker-compose -f docker-compose.elk.yml down
+    docker compose -f docker compose.elk.yml down
     echo "✅ ELK containers stopped"
 }
 
 # Function to clean up (remove volumes and data)
 cleanup_data() {
     echo "🧹 Cleaning up ELK data..."
-    docker-compose -f docker-compose.elk.yml down -v
+    docker compose -f docker compose.elk.yml down -v
     docker volume prune -f
     echo "✅ ELK data cleaned up"
 }

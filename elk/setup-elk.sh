@@ -26,7 +26,7 @@ sudo chown -R root:root elk/filebeat/ 2>/dev/null || echo "⚠️  Could not set
 # Start ELK stack
 echo "🐳 Starting ELK Stack..."
 cd elk
-docker-compose -f docker-compose.elk.yml up -d
+docker compose -f /home/lucasg/facultad/final_ing_aplicada/elk/docker-compose.elk.yml up -d
 
 # Wait for services to be healthy
 echo "⏳ Waiting for services to start..."
@@ -35,11 +35,11 @@ sleep 30
 # Check service health
 echo "🏥 Checking service health..."
 for service in elasticsearch kibana logstash; do
-    if docker-compose -f docker-compose.elk.yml ps | grep -q "$service.*Up"; then
+    if docker compose -f /home/lucasg/facultad/final_ing_aplicada/elk/docker-compose.elk.yml ps | grep -q "$service.*Up"; then
         echo "✅ $service is running"
     else
         echo "❌ $service failed to start"
-        docker-compose -f docker-compose.elk.yml logs $service
+        docker compose -f /home/lucasg/facultad/final_ing_aplicada/elk/docker-compose.elk.yml logs $service
     fi
 done
 
