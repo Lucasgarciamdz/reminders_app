@@ -3,6 +3,7 @@ name: reminders
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: reminders-elasticsearch
     # volumes:
     #   - ~/volumes/jhipster/reminders/elasticsearch/:/usr/share/elasticsearch/data/
     # If you want to expose these ports outside your dev PC,
@@ -14,8 +15,57 @@ services:
       - 'ES_JAVA_OPTS=-Xms256m -Xmx256m'
       - 'discovery.type=single-node'
       - 'xpack.security.enabled=false'
+    networks:
+      - reminders-elk
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:9200/_cluster/health?wait_for_status=green&timeout=10s']
       interval: 5s
       timeout: 10s
       retries: 10
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.4
+    container_name: reminders-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - XPACK_SECURITY_ENABLED=false
+      - SERVER_NAME=kibana
+      - SERVER_HOST=0.0.0.0
+    ports:
+      - 127.0.0.1:5601:5601
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - reminders-elk
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:5601/api/status']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.13.4
+    container_name: reminders-logstash
+    environment:
+      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
+      - XPACK_MONITORING_ENABLED=false
+    ports:
+      - 127.0.0.1:5000:5000  # TCP input for JHipster logs
+      - 127.0.0.1:9600:9600  # API
+    volumes:
+      - ./logstash-config:/usr/share/logstash/pipeline:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - reminders-elk
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9600']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+networks:
+  reminders-elk:
+    driver: bridge

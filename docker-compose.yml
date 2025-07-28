@@ -14,6 +14,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - reminders-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reminders"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   # Elasticsearch
   elasticsearch:
@@ -44,9 +49,6 @@ services:
       - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=a7a6311933d3503b89bc2dbc36572c33a6c10925682e591bffcab6911c06786d
     ports:
       - "5601:5601"
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
     networks:
       - reminders-network
     healthcheck:
@@ -70,9 +72,6 @@ services:
       - ./elk/logstash/config:/usr/share/logstash/config:ro
       - ./elk/logstash/pipeline:/usr/share/logstash/pipeline:ro
       - logstash_data:/usr/share/logstash/data
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
     networks:
       - reminders-network
     healthcheck:
@@ -93,9 +92,12 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_ELASTICSEARCH_URIS=http://elasticsearch:9200
     depends_on:
-      - postgres
-      - elasticsearch
-      - logstash
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      logstash:
+        condition: service_healthy
     networks:
       - reminders-network
     logging:
@@ -107,6 +109,13 @@ services:
     labels:
       - "service=backend"
       - "environment=production"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/management/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    profiles:
+      - production
 
   # Frontend Application
   frontend:
@@ -114,7 +123,8 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - reminders-network
     logging:
@@ -126,6 +136,13 @@ services:
     labels:
       - "service=frontend"
       - "environment=production"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - production
 
 volumes:
   postgres_data:
