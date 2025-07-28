@@ -19,7 +19,6 @@ pipeline {
         NODE_VERSION = "24"
         
         // Test configuration
-        MAVEN_OPTS = "-Xmx1024m -XX:MaxPermSize=256m"
         CYPRESS_CACHE_FOLDER = "${WORKSPACE}/.cypress"
     }
     
