@@ -8,15 +8,15 @@ pipeline {
         DOCKERHUB_PASSWORD = "${DOCKERHUB_CREDENTIALS_PSW}"
         
         // Docker image names (change these to your DockerHub username/repository)
-        BACKEND_IMAGE = "your-dockerhub-username/reminders-backend"
-        FRONTEND_IMAGE = "your-dockerhub-username/reminders-frontend"
+        BACKEND_IMAGE = "luxor12354/reminders_app:latest_backend"
+        FRONTEND_IMAGE = "luxor12354/reminders_app:latest_frontend"
         
         // Build version
         BUILD_VERSION = "${BUILD_NUMBER}-${GIT_COMMIT.take(7)}"
         
         // Java and Node versions
         JAVA_HOME = "/usr/lib/jvm/java-17-openjdk"
-        NODE_VERSION = "18"
+        NODE_VERSION = "24"
         
         // Test configuration
         MAVEN_OPTS = "-Xmx1024m -XX:MaxPermSize=256m"
@@ -334,9 +334,6 @@ pipeline {
                 # Clean up unused networks
                 docker network prune -f || true
             '''
-            
-            // Clean workspace
-            cleanWs()
         }
         
         success {
