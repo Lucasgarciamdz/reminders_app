@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 
+                              http://maven.apache.org/xsd/settings-1.0.0.xsd">
+    
+    <mirrors>
+        <!-- Central Repository Mirror -->
+        <mirror>
+            <id>central-https</id>
+            <mirrorOf>central</mirrorOf>
+            <name>Central Repository HTTPS</name>
+            <url>https://repo1.maven.org/maven2</url>
+        </mirror>
+        
+        <!-- Mirror for old java.net repositories -->
+        <mirror>
+            <id>maven-central-java-net</id>
+            <mirrorOf>releases.java.net,shapshots.java.net,jvnet-nexus-staging</mirrorOf>
+            <name>Maven Central for java.net</name>
+            <url>https://repo1.maven.org/maven2</url>
+        </mirror>
+        
+        <!-- Mirror for NetBeans repository -->
+        <mirror>
+            <id>maven-central-netbeans</id>
+            <mirrorOf>netbeans</mirrorOf>
+            <name>Maven Central for NetBeans</name>
+            <url>https://repo1.maven.org/maven2</url>
+        </mirror>
+    </mirrors>
+    
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo1.maven.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        
+        <repository>
+            <id>spring-releases</id>
+            <name>Spring Releases</name>
+            <url>https://repo.spring.io/release</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo1.maven.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </pluginRepository>
+        
+        <pluginRepository>
+            <id>spring-releases</id>
+            <name>Spring Releases</name>
+            <url>https://repo.spring.io/release</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+</settings>

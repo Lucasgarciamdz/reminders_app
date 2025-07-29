@@ -82,7 +82,7 @@ services:
 
   # Backend Application
   backend:
-    image: your-dockerhub-username/reminders-backend:latest
+    image: luxor12354/reminders_app:latest
     ports:
       - "8080:8080"
     environment:
