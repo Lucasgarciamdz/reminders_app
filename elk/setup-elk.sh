@@ -26,7 +26,7 @@ sudo chown -R root:root elk/filebeat/ 2>/dev/null || echo "⚠️  Could not set
 # Start ELK stack
 echo "🐳 Starting ELK Stack..."
 cd elk
-docker compose -f /home/lucasg/facultad/final_ing_aplicada/elk/docker-compose.elk.yml up -d
+docker compose -f docker-compose.elk.yml -p "reminders" up -d
 
 # Wait for services to be healthy
 echo "⏳ Waiting for services to start..."

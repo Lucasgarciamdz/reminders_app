@@ -11,9 +11,9 @@ pipeline {
     }
     
     tools {
-        maven 'Maven-3.9.6'
-        nodejs 'NodeJS-22.15.0'
-        jdk 'OpenJDK-17'
+        maven 'Maven3'
+        nodejs 'NodeJS18'
+        jdk 'JDK17'
     }
     
     stages {

@@ -159,7 +159,7 @@ EOF
 # Start Jenkins
 print_header "🚀 Starting Jenkins..."
 cd jenkins
-docker-compose -f docker-compose.jenkins.yml up -d
+docker-compose -f docker-compose.jenkins.yml -p "reminders" up -d
 
 print_status "Waiting for Jenkins to start (this may take a few minutes)..."
 cd ..
