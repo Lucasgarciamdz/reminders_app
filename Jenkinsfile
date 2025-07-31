@@ -33,7 +33,21 @@ pipeline {
             steps {
                 dir('frontend') {
                     script {
-                        echo "🔨 Compilando el frontend con npm..."
+                        echo "🔨 Instalando Node.js y compilando el frontend..."
+                        
+                        // Instalar Node.js si no existe
+                        sh '''
+                            if ! command -v node &> /dev/null; then
+                                echo "Instalando Node.js..."
+                                curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+                                apt-get install -y nodejs
+                            fi
+                            
+                            echo "Versiones instaladas:"
+                            node --version
+                            npm --version
+                        '''
+                        
                         sh 'npm ci'
                         sh 'npm run build'
                         echo "✅ Frontend compilado exitosamente"
