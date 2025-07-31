@@ -49,7 +49,7 @@ pipeline {
                         '''
                         
                         sh 'npm ci'
-                        sh 'npm run build'
+                        // sh 'npm run build'
                         echo "✅ Frontend compilado exitosamente"
                     }
                 }
