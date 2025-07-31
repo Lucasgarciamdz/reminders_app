@@ -110,6 +110,13 @@ class ReminderCompletionTest {
         Reminder reminder = createBasicReminder().isCompleted(false);
         Instant beforeCompletion = Instant.now();
 
+        // Add a small delay to ensure different timestamps
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
         // When
         reminder.isCompleted(true).lastModifiedDate(Instant.now());
 

@@ -215,6 +215,12 @@ public class Reminder implements Serializable {
     }
 
     public void setTags(Set<Tag> tags) {
+        if (this.tags != null) {
+            this.tags.forEach(i -> i.getReminders().remove(this));
+        }
+        if (tags != null) {
+            tags.forEach(i -> i.getReminders().add(this));
+        }
         this.tags = tags;
     }
 
@@ -225,11 +231,13 @@ public class Reminder implements Serializable {
 
     public Reminder addTags(Tag tag) {
         this.tags.add(tag);
+        tag.getReminders().add(this);
         return this;
     }
 
     public Reminder removeTags(Tag tag) {
         this.tags.remove(tag);
+        tag.getReminders().remove(this);
         return this;
     }
 
