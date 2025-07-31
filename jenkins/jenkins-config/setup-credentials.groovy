@@ -17,7 +17,7 @@ def dockerHubCredentials = new UsernamePasswordCredentialsImpl(
     "dockerhub-credentials",
     "Docker Hub Credentials",
     "luxor12354",
-    "dckr_pat_Vg0tLKYvRaWZ5O20hSFif5z9KNc"
+    ""
 )
 
 store.addCredentials(domain, dockerHubCredentials)
