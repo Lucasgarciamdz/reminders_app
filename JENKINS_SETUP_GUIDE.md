@@ -154,3 +154,51 @@ Una vez configurado, cada vez que ejecutes el pipeline:
 4. Podrás usar las imágenes en cualquier entorno
 
 ¡Tu pipeline de CI/CD está listo para usar! 🚀
+## 🔧 SOLUC
+IÓN PARA PROBLEMAS DE DOCKER
+
+Si tienes problemas con permisos de Docker, sigue estos pasos:
+
+### Pasos para el Desarrollador:
+
+1. **Detén Jenkins actual:**
+   ```bash
+   docker-compose -f docker-compose.jenkins.yml down
+   ```
+
+2. **Limpia volúmenes (opcional, solo si quieres empezar limpio):**
+   ```bash
+   docker volume prune
+   ```
+
+3. **Levanta la nueva configuración con Docker-in-Docker:**
+   ```bash
+   docker-compose -f docker-compose.jenkins.yml up -d
+   ```
+
+4. **Verifica que ambos contenedores estén corriendo:**
+   ```bash
+   docker ps
+   ```
+   Deberías ver `jenkins-server` y `docker-dind` corriendo.
+
+5. **Espera unos minutos para que Jenkins termine de inicializar**
+
+6. **Accede a Jenkins en http://localhost:8081**
+
+7. **Ejecuta el pipeline - ahora debería funcionar sin problemas de permisos**
+
+### ¿Qué cambió?
+
+- **Docker-in-Docker (DinD)**: Jenkins ahora usa su propio daemon de Docker
+- **Sin problemas de permisos**: No depende del Docker del host
+- **Más seguro**: Aislamiento completo entre Jenkins y el host
+- **Instalación automática**: El pipeline instala Docker CLI y Node.js automáticamente
+
+### Verificación:
+
+Una vez que el pipeline corra exitosamente, verifica en Docker Hub que las imágenes se subieron:
+- `tu_usuario/reminders-backend:latest`
+- `tu_usuario/reminders-frontend:latest`
+
+¡Esta configuración debería resolver definitivamente los problemas de permisos! 🎯
