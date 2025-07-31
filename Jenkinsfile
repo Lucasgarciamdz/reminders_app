@@ -1,6 +1,12 @@
 pipeline {
     agent any
     
+    tools {
+        maven 'Maven3'
+        jdk 'JDK-18'
+        nodejs 'NodeJS18'
+    }
+    
     environment {
         DOCKER_HUB_USERNAME = 'luxor12354'
         BACKEND_IMAGE = "${DOCKER_HUB_USERNAME}/reminders-backend"
@@ -12,147 +18,77 @@ pipeline {
             steps {
                 echo 'Checking out source code...'
                 checkout scm
-                script {
-                    env.BUILD_VERSION = "${env.BUILD_NUMBER}-${env.GIT_COMMIT?.take(7) ?: 'unknown'}"
-                    echo "Build version: ${env.BUILD_VERSION}"
-                }
-            }
-        }
-        
-        stage('Environment Check') {
-            steps {
-                sh '''
-                    echo "=== Environment Information ==="
-                    echo "Workspace: ${WORKSPACE}"
-                    echo "Build Number: ${BUILD_NUMBER}"
-                    echo "Git Commit: ${GIT_COMMIT}"
-                    echo "Java Version:"
-                    java -version || echo "Java not found"
-                    echo "Maven Version:"
-                    mvn --version || echo "Maven not found"
-                    echo "Node Version:"
-                    node --version || echo "Node not found"
-                    echo "NPM Version:"
-                    npm --version || echo "NPM not found"
-                    echo "Docker Version:"
-                    docker --version || echo "Docker not found"
-                    echo "=== End Environment Information ==="
-                '''
-            }
-        }
-        
-        stage('Build Backend') {
-            steps {
-                dir('backend') {
-                    sh '''
-                        echo "Building backend application..."
-                        if [ -f "mvnw" ]; then
-                            echo "Using Maven wrapper"
-                            chmod +x mvnw
-                            ./mvnw clean compile -DskipTests -q
-                        elif command -v mvn >/dev/null 2>&1; then
-                            echo "Using system Maven"
-                            mvn clean compile -DskipTests -q
-                        else
-                            echo "Neither Maven wrapper nor system Maven found"
-                            exit 1
-                        fi
-                    '''
-                }
             }
         }
         
         stage('Test Backend') {
             steps {
                 dir('backend') {
-                    sh '''
-                        echo "Running backend tests..."
-                        if [ -f "mvnw" ]; then
-                            ./mvnw test -q || echo "Some tests failed, continuing..."
-                        elif command -v mvn >/dev/null 2>&1; then
-                            mvn test -q || echo "Some tests failed, continuing..."
-                        else
-                            echo "Skipping tests - Maven not available"
-                        fi
-                    '''
+                    echo 'Running backend tests...'
+                    sh 'chmod +x mvnw'
+                    sh './mvnw clean test'
                 }
             }
-        }
-        
-        stage('Package Backend') {
-            steps {
-                dir('backend') {
-                    sh '''
-                        echo "Packaging backend application..."
-                        if [ -f "mvnw" ]; then
-                            ./mvnw package -DskipTests -q
-                        elif command -v mvn >/dev/null 2>&1; then
-                            mvn package -DskipTests -q
-                        else
-                            echo "Cannot package - Maven not available"
-                            exit 1
-                        fi
-                    '''
-                }
-            }
-        }
-        
-        stage('Build Frontend') {
-            when {
-                expression { fileExists('backend/package.json') }
-            }
-            steps {
-                dir('backend') {
-                    sh '''
-                        echo "Building frontend application..."
-                        if command -v npm >/dev/null 2>&1; then
-                            echo "Installing dependencies..."
-                            npm install --silent || echo "npm install failed, continuing..."
-                            echo "Building frontend..."
-                            npm run webapp:build:prod || echo "Frontend build failed, continuing..."
-                        else
-                            echo "NPM not available, skipping frontend build"
-                        fi
-                    '''
-                }
-            }
-        }
-        
-        stage('Docker Build') {
-            when {
-                expression { 
-                    return sh(script: 'command -v docker', returnStatus: true) == 0
-                }
-            }
-            steps {
-                script {
-                    try {
-                        dir('backend') {
-                            echo "Building backend Docker image..."
-                            def backendImage = docker.build("${BACKEND_IMAGE}:${BUILD_VERSION}")
-                            echo "Backend image built successfully"
-                        }
-                    } catch (Exception e) {
-                        echo "Docker build failed: ${e.getMessage()}"
-                        echo "Continuing without Docker build..."
+            post {
+                always {
+                    dir('backend') {
+                        publishTestResults testResultsPattern: 'target/surefire-reports/*.xml'
                     }
                 }
             }
         }
         
-        stage('Archive Artifacts') {
+        stage('Test Frontend - Cypress') {
             steps {
+                dir('frontend') {
+                    echo 'Installing frontend dependencies...'
+                    sh 'npm ci'
+                    echo 'Running Cypress tests...'
+                    sh 'npm run cypress:run:headless'
+                }
+            }
+        }
+        
+        stage('Build Backend Docker Image') {
+            steps {
+                dir('backend') {
+                    echo 'Packaging backend application...'
+                    sh './mvnw package -DskipTests'
+                    echo 'Building backend Docker image...'
+                    script {
+                        def backendImage = docker.build("${BACKEND_IMAGE}:${BUILD_NUMBER}")
+                        backendImage.tag('latest')
+                    }
+                }
+            }
+        }
+        
+        stage('Build Frontend Docker Image') {
+            steps {
+                dir('frontend') {
+                    echo 'Building frontend Docker image...'
+                    script {
+                        def frontendImage = docker.build("${FRONTEND_IMAGE}:${BUILD_NUMBER}")
+                        frontendImage.tag('latest')
+                    }
+                }
+            }
+        }
+        
+        stage('Push Docker Images') {
+            steps {
+                echo 'Pushing Docker images to DockerHub...'
                 script {
-                    try {
-                        echo "Archiving build artifacts..."
-                        if (fileExists('backend/target/*.jar')) {
-                            archiveArtifacts artifacts: 'backend/target/*.jar', fingerprint: true, allowEmptyArchive: true
-                        }
-                        if (fileExists('backend/target/classes/static/')) {
-                            archiveArtifacts artifacts: 'backend/target/classes/static/**/*', fingerprint: true, allowEmptyArchive: true
-                        }
-                    } catch (Exception e) {
-                        echo "Failed to archive artifacts: ${e.getMessage()}"
+                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                        // Push backend image
+                        def backendImage = docker.image("${BACKEND_IMAGE}:${BUILD_NUMBER}")
+                        backendImage.push()
+                        backendImage.push('latest')
+                        
+                        // Push frontend image
+                        def frontendImage = docker.image("${FRONTEND_IMAGE}:${BUILD_NUMBER}")
+                        frontendImage.push()
+                        frontendImage.push('latest')
                     }
                 }
             }
@@ -162,18 +98,7 @@ pipeline {
     post {
         always {
             echo 'Pipeline execution completed.'
-            script {
-                try {
-                    // Only clean workspace if we're not in the problematic directory
-                    if (env.WORKSPACE && !env.WORKSPACE.contains('reminders-pipeline2')) {
-                        cleanWs()
-                    } else {
-                        echo 'Skipping workspace cleanup due to permission issues'
-                    }
-                } catch (Exception e) {
-                    echo "Cleanup failed: ${e.getMessage()}"
-                }
-            }
+            cleanWs()
         }
         success {
             echo '✅ Pipeline completed successfully!'
