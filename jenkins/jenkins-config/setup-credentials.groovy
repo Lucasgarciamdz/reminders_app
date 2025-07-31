@@ -11,14 +11,5 @@ def instance = Jenkins.getInstance()
 def domain = Domain.global()
 def store = instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
 
-// Create Docker Hub credentials
-def dockerHubCredentials = new UsernamePasswordCredentialsImpl(
-    CredentialsScope.GLOBAL,
-    "dockerhub-credentials",
-    "Docker Hub Credentials",
-    "luxor12354",
-    ""
-)
-
 store.addCredentials(domain, dockerHubCredentials)
 instance.save()

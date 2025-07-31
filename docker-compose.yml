@@ -117,6 +117,31 @@ services:
     profiles:
       - production
 
+  # Jenkins CI/CD
+  jenkins:
+    image: jenkins/jenkins:2.460.3-lts
+    user: root
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    environment:
+      - JENKINS_OPTS=--httpPort=8080
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+      - ./:/workspace
+    networks:
+      - reminders-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/login || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    profiles:
+      - ci
+
   # Frontend Application
   frontend:
     image: your-dockerhub-username/reminders-frontend:latest
@@ -148,6 +173,7 @@ volumes:
   postgres_data:
   elasticsearch_data:
   logstash_data:
+  jenkins_data:
 
 networks:
   reminders-network:
