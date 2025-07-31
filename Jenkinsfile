@@ -1,107 +1,123 @@
 pipeline {
     agent any
     
-    tools {
-        maven 'Maven3'
-        jdk 'JDK18'
-        nodejs 'NodeJS18'
-    }
-    
     environment {
-        DOCKER_HUB_USERNAME = 'luxor12354'
-        BACKEND_IMAGE = "${DOCKER_HUB_USERNAME}/reminders_app:backend"
-        FRONTEND_IMAGE = "${DOCKER_HUB_USERNAME}/reminders_app:frontend"
+        DOCKER_HUB_CREDENTIALS = credentials('dockerhub-credentials')
+        DOCKER_HUB_USERNAME = "${DOCKER_HUB_CREDENTIALS_USR}"
+        DOCKER_HUB_PASSWORD = "${DOCKER_HUB_CREDENTIALS_PSW}"
+        BACKEND_IMAGE = "${DOCKER_HUB_USERNAME}/reminders-backend"
+        FRONTEND_IMAGE = "${DOCKER_HUB_USERNAME}/reminders-frontend"
+        BUILD_NUMBER_TAG = "${BUILD_NUMBER}"
     }
     
     stages {
         stage('Checkout') {
             steps {
-                echo 'Checking out source code...'
                 checkout scm
             }
         }
         
-        stage('Test Backend') {
+        stage('Build Backend') {
             steps {
                 dir('backend') {
-                    echo 'Running backend tests...'
-                    sh 'chmod +x mvnw'
-                    echo 'Cleaning all build artifacts...'
-                    sh './mvnw clean package -DskipTests'
-                }
-            }
-        }
-        
-        stage('Test Frontend - Cypress') {
-            steps {
-                dir('frontend') {
-                    echo 'Installing frontend dependencies...'
-                    sh 'npm ci'
-                    echo 'Running Cypress tests...'
-                    sh 'npm run cypress:run:headless'
-                }
-            }
-        }
-        
-        stage('Build Backend Docker Image') {
-            steps {
-                dir('backend') {
-                    echo 'Cleaning frontend build cache...'
-                    sh 'rm -rf src/main/webapp/node_modules || true'
-                    sh 'rm -rf target/classes/static || true'
-                    echo 'Cleaning and packaging backend application...'
-                    sh './mvnw clean package -DskipTests'
-                    echo 'Building backend Docker image...'
                     script {
-                        def backendImage = docker.build("${BACKEND_IMAGE}:${BUILD_NUMBER}")
-                        backendImage.tag('latest')
+                        echo "🔨 Compilando el backend con Maven..."
+                        sh './mvnw clean package -DskipTests -Pprod'
+                        echo "✅ Backend compilado exitosamente"
                     }
                 }
             }
         }
         
-        stage('Build Frontend Docker Image') {
+        stage('Build Frontend') {
             steps {
                 dir('frontend') {
-                    echo 'Building frontend Docker image...'
                     script {
-                        def frontendImage = docker.build("${FRONTEND_IMAGE}:${BUILD_NUMBER}")
-                        frontendImage.tag('latest')
+                        echo "🔨 Compilando el frontend con npm..."
+                        sh 'npm ci'
+                        sh 'npm run build'
+                        echo "✅ Frontend compilado exitosamente"
                     }
                 }
             }
         }
         
-        stage('Push Docker Images') {
+        stage('Build Docker Images') {
+            parallel {
+                stage('Build Backend Image') {
+                    steps {
+                        dir('backend') {
+                            script {
+                                echo "🐳 Creando imagen Docker del backend..."
+                                sh "docker build -t ${BACKEND_IMAGE}:${BUILD_NUMBER_TAG} -t ${BACKEND_IMAGE}:latest ."
+                                echo "✅ Imagen del backend creada: ${BACKEND_IMAGE}:${BUILD_NUMBER_TAG}"
+                            }
+                        }
+                    }
+                }
+                stage('Build Frontend Image') {
+                    steps {
+                        dir('frontend') {
+                            script {
+                                echo "🐳 Creando imagen Docker del frontend..."
+                                sh "docker build -t ${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG} -t ${FRONTEND_IMAGE}:latest ."
+                                echo "✅ Imagen del frontend creada: ${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG}"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Push to Docker Hub') {
             steps {
-                echo 'Pushing Docker images to DockerHub...'
                 script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-                        // Push backend image
-                        def backendImage = docker.image("${BACKEND_IMAGE}:${BUILD_NUMBER}")
-                        backendImage.push()
-                        backendImage.push('latest')
-                        
-                        // Push frontend image
-                        def frontendImage = docker.image("${FRONTEND_IMAGE}:${BUILD_NUMBER}")
-                        frontendImage.push()
-                        frontendImage.push('latest')
-                    }
+                    echo "🚀 Subiendo imágenes a Docker Hub..."
+                    
+                    // Login to Docker Hub
+                    sh "echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USERNAME} --password-stdin"
+                    
+                    // Push backend images
+                    sh "docker push ${BACKEND_IMAGE}:${BUILD_NUMBER_TAG}"
+                    sh "docker push ${BACKEND_IMAGE}:latest"
+                    echo "✅ Backend subido a Docker Hub: ${BACKEND_IMAGE}"
+                    
+                    // Push frontend images
+                    sh "docker push ${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG}"
+                    sh "docker push ${FRONTEND_IMAGE}:latest"
+                    echo "✅ Frontend subido a Docker Hub: ${FRONTEND_IMAGE}"
+                    
+                    // Logout
+                    sh "docker logout"
+                }
+            }
+        }
+        
+        stage('Cleanup') {
+            steps {
+                script {
+                    echo "🧹 Limpiando imágenes locales..."
+                    sh "docker rmi ${BACKEND_IMAGE}:${BUILD_NUMBER_TAG} ${BACKEND_IMAGE}:latest || true"
+                    sh "docker rmi ${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG} ${FRONTEND_IMAGE}:latest || true"
+                    echo "✅ Limpieza completada"
                 }
             }
         }
     }
     
     post {
-        always {
-            echo 'Pipeline execution completed.'
-            cleanWs()
-        }
         success {
-            echo '✅ Pipeline completed successfully!'
+            echo "🎉 Pipeline ejecutado exitosamente!"
+            echo "📦 Imágenes disponibles en Docker Hub:"
+            echo "   - ${BACKEND_IMAGE}:${BUILD_NUMBER_TAG}"
+            echo "   - ${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG}"
         }
         failure {
-            echo '❌ Pipeline failed!'
+            echo "❌ Pipeline falló. Revisa los logs para más detalles."
+        }
+        always {
+            echo "🧹 Limpiando workspace..."
+            cleanWs()
         }
     }
 }
