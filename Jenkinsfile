@@ -26,7 +26,11 @@ pipeline {
                 dir('backend') {
                     echo 'Running backend tests...'
                     sh 'chmod +x mvnw'
-                    sh './mvnw clean package -DskipTests'
+                    echo 'Cleaning all build artifacts...'
+                    sh 'rm -rf target/ || true'
+                    sh 'rm -rf src/main/webapp/node_modules/ || true'
+                    sh 'rm -rf src/main/webapp/.angular/ || true'
+                    sh './mvnw clean package -DskipTests -X'
                 }
             }
             post {
