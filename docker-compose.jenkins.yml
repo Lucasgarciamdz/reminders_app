@@ -14,6 +14,7 @@ services:
       - /usr/bin/docker:/usr/bin/docker
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
+      - JAVA_OPTS=-Xmx2g -Xms1g
     user: root
     networks:
       - jenkins-network

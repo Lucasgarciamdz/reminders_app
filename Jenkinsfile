@@ -22,7 +22,7 @@ pipeline {
                 dir('backend') {
                     script {
                         echo "🔨 Compilando el backend con Maven..."
-                        sh './mvnw clean package -DskipTests -Pprod'
+                        sh './mvnw clean package -DskipTests -Pprod -Dskip.installnodenpm -Dskip.npm'
                         echo "✅ Backend compilado exitosamente"
                     }
                 }
