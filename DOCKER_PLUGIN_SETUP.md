@@ -41,12 +41,73 @@ docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
 
 ## Required Setup Steps
 
-### 1. Install Docker Pipeline Plugin
+### 1. Fix Docker Permission Issues (CRITICAL)
+The "Permission denied" error occurs because Jenkins doesn't have access to the Docker daemon. Here are the solutions:
+
+#### Option A: If Jenkins runs directly on the host (not in Docker)
+```bash
+# Add jenkins user to docker group
+sudo usermod -aG docker jenkins
+
+# Fix docker socket permissions
+sudo chown root:docker /var/run/docker.sock
+sudo chmod 664 /var/run/docker.sock
+
+# Restart Jenkins service
+sudo systemctl restart jenkins
+```
+
+#### Option B: If Jenkins runs in Docker (recommended for your setup)
+Update your `docker-compose.jenkins.yml` to include proper Docker socket mounting:
+
+```yaml
+version: '3.8'
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    user: root  # Run as root to access Docker socket
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock  # Mount Docker socket
+      - /usr/bin/docker:/usr/bin/docker  # Mount Docker binary
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+
+volumes:
+  jenkins_home:
+```
+
+#### Option C: Alternative Docker-in-Docker approach
+```yaml
+version: '3.8'
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    privileged: true
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+
+volumes:
+  jenkins_home:
+```
+
+### 2. Install Docker Pipeline Plugin
 1. Go to **Manage Jenkins** → **Manage Plugins**
 2. Search for "Docker Pipeline" plugin
 3. Install and restart Jenkins if needed
 
-### 2. Verify Docker Hub Credentials
+### 3. Verify Docker Hub Credentials
 Ensure your Docker Hub credentials are properly configured:
 1. Go to **Manage Jenkins** → **Manage Credentials**
 2. Verify that `dockerhub-credentials` exists with:
@@ -54,11 +115,23 @@ Ensure your Docker Hub credentials are properly configured:
    - **Username**: Your Docker Hub username
    - **Password**: Your Docker Hub password or access token
 
-### 3. Configure Docker Agent Labels (Optional)
-If you have multiple Jenkins agents, configure which ones can run Docker:
-1. Go to **Manage Jenkins** → **Configure System**
-2. Find "Pipeline Docker Label" section
-3. Set appropriate labels for Docker-capable agents
+### 4. Test Docker Access
+After fixing permissions, test Docker access in Jenkins:
+1. Create a simple pipeline job
+2. Add this test script:
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Test Docker') {
+            steps {
+                sh 'docker --version'
+                sh 'docker info'
+            }
+        }
+    }
+}
+```
 
 ## Benefits of Using Docker Plugin
 
@@ -93,28 +166,58 @@ If you have multiple Jenkins agents, configure which ones can run Docker:
 
 ### Common Issues:
 
-1. **Plugin Not Found Error**
+1. **Permission Denied Error (Most Common)**
+   ```
+   docker: Permission denied
+   ```
+   **Solution**: Fix Docker socket permissions (see setup steps above)
+
+2. **Docker Command Not Found**
+   ```
+   docker: command not found
+   ```
+   **Solution**: Install Docker in Jenkins container or mount Docker binary
+
+3. **Plugin Not Found Error**
    - Install Docker Pipeline plugin from Jenkins Plugin Manager
 
-2. **Credentials Not Found**
+4. **Credentials Not Found**
    - Verify `dockerhub-credentials` ID matches your credential configuration
 
-3. **Docker Daemon Connection Issues**
+5. **Docker Daemon Connection Issues**
    - Ensure Jenkins agent has access to Docker daemon
    - Check Docker socket permissions: `/var/run/docker.sock`
 
-4. **Registry Authentication Failures**
+6. **Registry Authentication Failures**
    - Verify Docker Hub credentials are correct
    - Check if using Docker Hub access tokens instead of passwords
 
 ### Debug Commands:
 ```bash
+# Check Docker socket permissions
+ls -la /var/run/docker.sock
+
+# Check if jenkins user is in docker group
+groups jenkins
+
+# Test Docker access from Jenkins container
+docker exec -it jenkins docker --version
+
 # Check if Docker Pipeline plugin is installed
 curl -s http://your-jenkins-url/pluginManager/api/json?depth=1 | grep docker-workflow
+```
 
-# Verify Docker daemon access from Jenkins agent
-docker version
-docker info
+### Quick Fix Commands:
+```bash
+# If Jenkins runs on host
+sudo usermod -aG docker jenkins
+sudo chown root:docker /var/run/docker.sock
+sudo chmod 664 /var/run/docker.sock
+sudo systemctl restart jenkins
+
+# If Jenkins runs in Docker, restart with proper permissions
+docker-compose down
+docker-compose up -d
 ```
 
 ## Next Steps

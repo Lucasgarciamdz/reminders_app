@@ -95,12 +95,8 @@ pipeline {
                         dir('backend') {
                             script {
                                 echo "🐳 Creando imagen Docker del backend..."
-                                def backendImage = docker.build("${BACKEND_IMAGE}:${BUILD_NUMBER_TAG}")
-                                backendImage.tag('latest')
+                                sh "docker build -t ${BACKEND_IMAGE}:${BUILD_NUMBER_TAG} -t ${BACKEND_IMAGE}:latest ."
                                 echo "✅ Imagen del backend creada: ${BACKEND_IMAGE}:${BUILD_NUMBER_TAG}"
-                                
-                                // Store the image for later use
-                                env.BACKEND_IMAGE_BUILT = "${BACKEND_IMAGE}:${BUILD_NUMBER_TAG}"
                             }
                         }
                     }
@@ -110,12 +106,8 @@ pipeline {
                         dir('frontend') {
                             script {
                                 echo "🐳 Creando imagen Docker del frontend..."
-                                def frontendImage = docker.build("${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG}")
-                                frontendImage.tag('latest')
+                                sh "docker build -t ${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG} -t ${FRONTEND_IMAGE}:latest ."
                                 echo "✅ Imagen del frontend creada: ${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG}"
-                                
-                                // Store the image for later use
-                                env.FRONTEND_IMAGE_BUILT = "${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG}"
                             }
                         }
                     }
@@ -128,20 +120,21 @@ pipeline {
                 script {
                     echo "🚀 Subiendo imágenes a Docker Hub..."
                     
-                    // Use Docker Pipeline plugin for registry operations
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
-                        // Push backend images
-                        def backendImage = docker.image("${BACKEND_IMAGE}:${BUILD_NUMBER_TAG}")
-                        backendImage.push()
-                        backendImage.push('latest')
-                        echo "✅ Backend subido a Docker Hub: ${BACKEND_IMAGE}"
-                        
-                        // Push frontend images
-                        def frontendImage = docker.image("${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG}")
-                        frontendImage.push()
-                        frontendImage.push('latest')
-                        echo "✅ Frontend subido a Docker Hub: ${FRONTEND_IMAGE}"
-                    }
+                    // Login to Docker Hub
+                    sh "echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USERNAME} --password-stdin"
+                    
+                    // Push backend images
+                    sh "docker push ${BACKEND_IMAGE}:${BUILD_NUMBER_TAG}"
+                    sh "docker push ${BACKEND_IMAGE}:latest"
+                    echo "✅ Backend subido a Docker Hub: ${BACKEND_IMAGE}"
+                    
+                    // Push frontend images
+                    sh "docker push ${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG}"
+                    sh "docker push ${FRONTEND_IMAGE}:latest"
+                    echo "✅ Frontend subido a Docker Hub: ${FRONTEND_IMAGE}"
+                    
+                    // Logout
+                    sh "docker logout"
                 }
             }
         }
@@ -150,17 +143,8 @@ pipeline {
             steps {
                 script {
                     echo "🧹 Limpiando imágenes locales..."
-                    try {
-                        // Clean up backend images
-                        def backendImage = docker.image("${BACKEND_IMAGE}:${BUILD_NUMBER_TAG}")
-                        sh "docker rmi ${BACKEND_IMAGE}:${BUILD_NUMBER_TAG} ${BACKEND_IMAGE}:latest || true"
-                        
-                        // Clean up frontend images
-                        def frontendImage = docker.image("${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG}")
-                        sh "docker rmi ${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG} ${FRONTEND_IMAGE}:latest || true"
-                    } catch (Exception e) {
-                        echo "⚠️ Cleanup warning: ${e.getMessage()}"
-                    }
+                    sh "docker rmi ${BACKEND_IMAGE}:${BUILD_NUMBER_TAG} ${BACKEND_IMAGE}:latest || true"
+                    sh "docker rmi ${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG} ${FRONTEND_IMAGE}:latest || true"
                     echo "✅ Limpieza completada"
                 }
             }
