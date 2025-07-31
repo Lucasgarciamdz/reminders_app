@@ -52,8 +52,11 @@ pipeline {
         stage('Build Backend Docker Image') {
             steps {
                 dir('backend') {
-                    echo 'Packaging backend application...'
-                    sh './mvnw package -DskipTests'
+                    echo 'Cleaning frontend build cache...'
+                    sh 'rm -rf src/main/webapp/node_modules || true'
+                    sh 'rm -rf target/classes/static || true'
+                    echo 'Cleaning and packaging backend application...'
+                    sh './mvnw clean package -DskipTests'
                     echo 'Building backend Docker image...'
                     script {
                         def backendImage = docker.build("${BACKEND_IMAGE}:${BUILD_NUMBER}")
