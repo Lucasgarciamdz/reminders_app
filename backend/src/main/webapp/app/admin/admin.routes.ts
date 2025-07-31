@@ -22,11 +22,12 @@ const routes: Routes = [
     loadComponent: () => import('./health/health.component'),
     title: 'health.title',
   },
-  {
-    path: 'logs',
-    loadComponent: () => import('./logs/logs.component'),
-    title: 'logs.title',
-  },
+  // Temporarily disabled logs route due to build issue
+  // {
+  //   path: 'logs',
+  //   loadComponent: () => import('./logs/logs.component'),
+  //   title: 'logs.title',
+  // },
   {
     path: 'metrics',
     loadComponent: () => import('./metrics/metrics.component'),
