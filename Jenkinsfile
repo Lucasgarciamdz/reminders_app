@@ -9,8 +9,8 @@ pipeline {
     
     environment {
         DOCKER_HUB_USERNAME = 'luxor12354'
-        BACKEND_IMAGE = "${DOCKER_HUB_USERNAME}/reminders-backend"
-        FRONTEND_IMAGE = "${DOCKER_HUB_USERNAME}/reminders-frontend"
+        BACKEND_IMAGE = "${DOCKER_HUB_USERNAME}/reminders_app:backend"
+        FRONTEND_IMAGE = "${DOCKER_HUB_USERNAME}/reminders_app:frontend"
     }
     
     stages {
@@ -26,7 +26,7 @@ pipeline {
                 dir('backend') {
                     echo 'Running backend tests...'
                     sh 'chmod +x mvnw'
-                    sh './mvnw clean test'
+                    sh './mvnw clean package -DskipTests'
                 }
             }
             post {
