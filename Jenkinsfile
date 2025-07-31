@@ -63,7 +63,7 @@ pipeline {
                         dir('backend') {
                             script {
                                 echo "🐳 Creando imagen Docker del backend..."
-                                sh "docker build -t ${BACKEND_IMAGE}:${BUILD_NUMBER_TAG} -t ${BACKEND_IMAGE}:latest ."
+                                sh "sudo docker build -t ${BACKEND_IMAGE}:${BUILD_NUMBER_TAG} -t ${BACKEND_IMAGE}:latest ."
                                 echo "✅ Imagen del backend creada: ${BACKEND_IMAGE}:${BUILD_NUMBER_TAG}"
                             }
                         }
@@ -74,7 +74,7 @@ pipeline {
                         dir('frontend') {
                             script {
                                 echo "🐳 Creando imagen Docker del frontend..."
-                                sh "docker build -t ${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG} -t ${FRONTEND_IMAGE}:latest ."
+                                sh "sudo docker build -t ${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG} -t ${FRONTEND_IMAGE}:latest ."
                                 echo "✅ Imagen del frontend creada: ${FRONTEND_IMAGE}:${BUILD_NUMBER_TAG}"
                             }
                         }
