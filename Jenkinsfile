@@ -27,7 +27,7 @@ pipeline {
                     echo 'Running backend tests...'
                     sh 'chmod +x mvnw'
                     echo 'Cleaning all build artifacts...'
-                    sh './mvnw clean package -DskipTests -X'
+                    sh './mvnw clean package -DskipTests'
                 }
             }
         }
