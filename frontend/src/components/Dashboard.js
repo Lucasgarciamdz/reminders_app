@@ -253,18 +253,19 @@ const Dashboard = () => {
 
       {/* Floating Action Button */}
       <Fab
-        color="primary"
-        aria-label="add reminder"
-        onClick={handleAddReminder}
-        sx={{
-          position: 'fixed',
-          bottom: theme.spacing(2),
-          right: theme.spacing(2),
-          zIndex: theme.zIndex.speedDial,
-        }}
-      >
-        <AddIcon />
-      </Fab>
+  color="primary"
+  aria-label="add reminder"
+  onClick={handleAddReminder}
+  sx={{
+    position: 'fixed',
+    bottom: { xs: theme.spacing(6), md: theme.spacing(12) }, // 48px on mobile, 64px on desktop
+    right: theme.spacing(4),
+    zIndex: theme.zIndex.speedDial,
+  }}
+>
+  <AddIcon />
+</Fab>
+
 
       {/* Add Reminder Form */}
       <AddReminderForm />
